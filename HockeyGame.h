@@ -11,6 +11,7 @@ public:
 	void pauseGame();
 	void resumeGame();
 private:
+	bool initPlayerPositions();
 	bool setUpConnections();
 	bool setUpGamestate();
 	bool setUpCamera();	

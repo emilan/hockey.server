@@ -56,10 +56,27 @@ bool HockeyGame::setUpCamera(){
 	cameraThreadHandle=(HANDLE)_beginthreadex(NULL,0,cameraThread,NULL,CREATE_SUSPENDED,NULL);//skapar kameratråden pausad
 	return true;
 }
+
+bool HockeyGame::initPlayerPositions() {
+	for (int i = 0; i < 2; i++) {
+		Team *pTeam = teamFromId(i);
+		for (int j = 0; j < 6; j++) {
+			char fileName[20];
+			sprintf(fileName, "player%d%d.txt", i, j);
+			pTeam->getPlayer(i)->readLocations(fileName);
+		}
+	}
+	return true;
+}
+
 bool HockeyGame::initializeGame(){
 	//creates the gamethreads suspended
 	if(!running){
 		running=true;
+		if (!initPlayerPositions()) {
+			running = false;
+			return running;
+		}
 		if(!setUpCamera()){//avbryter starten om inte kameran kan startas
 			running= false;
 			return running;
@@ -72,9 +89,6 @@ bool HockeyGame::initializeGame(){
 			running= false;
 			return running;
 		}
-	
-
-	
 		paused=true;
 		
 		cout<<"successfully initialized game: starting gamethreads"<<endl;
