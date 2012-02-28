@@ -99,7 +99,7 @@ unsigned __stdcall cameraThread(void* param){
 unsigned __stdcall senderThread(void* param){
 
 	cout<<"senderthread started"<<endl;
-	const int MESSAGELENGTH=27;
+	const int MESSAGELENGTH=29;
 	unsigned char homeStatus[100];   //borde inte dessa minskas???
 	unsigned char awayStatus[100];
 	int homeMessage[MESSAGELENGTH];
@@ -116,17 +116,16 @@ unsigned __stdcall senderThread(void* param){
 		//t =clock();
 		int lengthHome=homeSerial->read((char *)homeStatus);
 		int lengthAway=awaySerial->read((char *)awayStatus);
-		
-		int index=0;
-		// TODO: Uncomment out
-		//awayMessage[index]   = awayTeam.getGoals();
-		//homeMessage[index++] = homeTeam.getGoals();
-
-		//awayMessage[index]   = homeTeam.getGoals();
-		//homeMessage[index++] = awayTeam.getGoals();
 
 		homeTeam.update(homeStatus);
 		awayTeam.update(awayStatus);
+
+		int index=0;
+		awayMessage[index]   = awayTeam.getGoals();
+		homeMessage[index++] = homeTeam.getGoals();
+
+		awayMessage[index]   = homeTeam.getGoals();
+		homeMessage[index++] = awayTeam.getGoals();
 
 		awayMessage[index]=puck.x;
 		homeMessage[index++]=puck.x;
@@ -136,7 +135,6 @@ unsigned __stdcall senderThread(void* param){
 
 		awayMessage[index]=getGametime();
 		homeMessage[index++]=getGametime();
-;//getGametime();
 
 		myfile<<getGametime()<<"\t";
 		for(int i=0;i<12;i++){
