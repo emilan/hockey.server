@@ -25,8 +25,8 @@ class TeamConnection{// klass för att sköta kommunikation med AI-modul
 		TeamConnection(Connection source);
 		~TeamConnection();
 };
-extern TeamConnection* homeTeam;
-extern TeamConnection* awayTeam;
+extern TeamConnection* homeTeamConnection;
+extern TeamConnection* awayTeamConnection;
 
 extern UDPSocket *listeningSocket;
 

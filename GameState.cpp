@@ -2,6 +2,7 @@
 #include <process.h>
 #include "GameState.h"
 #include "TeamConnection.h"
+#include "Team.h"
 #include "CamCapture.h"
 #include "ObjectTracker.h"
 #include "cv.h"
@@ -17,8 +18,10 @@ bool running=false;
 bool paused=false;
 SerialConnection* homeSerial;
 SerialConnection* awaySerial;
-int homeGoals;
-int awayGoals;
+
+Team homeTeam;
+Team awayTeam;
+
 CamCapture* capture;
 ObjectTracker track_puck;
 Puck puck;
@@ -96,9 +99,9 @@ unsigned __stdcall cameraThread(void* param){
 unsigned __stdcall senderThread(void* param){
 
 	cout<<"senderthread started"<<endl;
-	const int MESSAGELENGTH=29;
-	char homeStatus[100];   //borde inte dessa minskas???
-	char awayStatus[100];
+	const int MESSAGELENGTH=27;
+	unsigned char homeStatus[100];   //borde inte dessa minskas???
+	unsigned char awayStatus[100];
 	int homeMessage[MESSAGELENGTH];
 	int awayMessage[MESSAGELENGTH];
 	ofstream myfile=ofstream();
@@ -111,15 +114,19 @@ unsigned __stdcall senderThread(void* param){
 		Sleep(10);
 		//cout<<" cycletime: "<<clock()-t<<endl;
 		//t =clock();
-		int lengthHome=homeSerial->read(homeStatus);
-		int lengthAway=awaySerial->read(awayStatus);
+		int lengthHome=homeSerial->read((char *)homeStatus);
+		int lengthAway=awaySerial->read((char *)awayStatus);
 		
 		int index=0;
-		awayMessage[index]=awayGoals;
-		homeMessage[index++]=homeGoals;
+		// TODO: Uncomment out
+		//awayMessage[index]   = awayTeam.getGoals();
+		//homeMessage[index++] = homeTeam.getGoals();
 
-		awayMessage[index]=homeGoals;
-		homeMessage[index++]=awayGoals;
+		//awayMessage[index]   = homeTeam.getGoals();
+		//homeMessage[index++] = awayTeam.getGoals();
+
+		homeTeam.update(homeStatus);
+		awayTeam.update(awayStatus);
 
 		awayMessage[index]=puck.x;
 		homeMessage[index++]=puck.x;
@@ -136,19 +143,19 @@ unsigned __stdcall senderThread(void* param){
 			awayMessage[index]=(awayStatus[i]&0xff);//awayStatus[i];
 			homeMessage[index++]=(homeStatus[i]&0xff);
 			
-			myfile << (int)((unsigned char)homeStatus[i]) << "\t";	
+			myfile << (int)homeStatus[i] << "\t";	
 		}
 		
 		for(int i=0;i<12;i++){
 			awayMessage[index]=(homeStatus[i]&0xff);
 			homeMessage[index++]=(awayStatus[i]&0xff);//awayStatus[i];
 			
-			myfile << (int)((unsigned char)awayStatus[i]) << "\t";	
+			myfile << (int)awayStatus[i] << "\t";	
 		}
 		
 		myfile<<endl;
-		homeTeam->send(awayMessage,MESSAGELENGTH);
-		awayTeam->send(homeMessage,MESSAGELENGTH);
+		homeTeamConnection->send(awayMessage,MESSAGELENGTH);
+		awayTeamConnection->send(homeMessage,MESSAGELENGTH);
 		//cout<<clock()-t<<endl;;
 		
 	}
@@ -193,3 +200,10 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 	
 }
 
+Team *teamFromId(int id) {
+	if (id == 0)
+		return &homeTeam;
+	else if (id == 1)
+		return &awayTeam;
+	return NULL;
+}

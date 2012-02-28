@@ -4,6 +4,8 @@
 #include "SerialConnection.h"
 #include "ObjectTracker.h"
 #include "CamCapture.h"
+#include "Team.h"
+
 #ifndef GAMESTATE
 #define GAMESTATE
 #define IMAGESIZE cvSize(744/2,480/2)
@@ -70,5 +72,7 @@ extern ObjectTracker track_puck;
 
 unsigned __stdcall senderThread(void* param);
 unsigned __stdcall cameraThread(void* param);
+
+Team *teamFromId(int id);
 
 #endif

@@ -70,6 +70,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Limits.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="PracticalSocket.cpp" />
     <ClCompile Include="SerialClass.cpp" />
     <ClCompile Include="CalibrationMode.cpp" />
@@ -82,10 +83,12 @@
     <ClCompile Include="ObjectTracker.cpp" />
     <ClCompile Include="PlayerFunctions.cpp" />
     <ClCompile Include="SerialConnection.cpp" />
+    <ClCompile Include="Team.cpp" />
     <ClCompile Include="TeamConnection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Limits.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="PracticalSocket.h" />
     <ClInclude Include="SerialClass.h" />
     <ClInclude Include="serialcomm.h" />
@@ -98,6 +101,7 @@
     <ClInclude Include="HockeyManager.h" />
     <ClInclude Include="ObjectTracker.h" />
     <ClInclude Include="SerialConnection.h" />
+    <ClInclude Include="Team.h" />
     <ClInclude Include="TeamConnection.h" />
   </ItemGroup>
   <ItemGroup>

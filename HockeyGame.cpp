@@ -8,7 +8,7 @@
 using namespace std;
 
 bool HockeyGame::setUpConnections(){//upprättar anslutning AI-moduler
-	if(homeTeam==NULL||awayTeam==NULL){
+	if(homeTeamConnection==NULL||awayTeamConnection==NULL){
 		listeningSocket = new UDPSocket(PORT);//objekt för udp-kommunikation
 
 		Connection homeSource=Connection();//objekt som innehåller information om anslutningar, se TeamConnection.cpp
@@ -20,8 +20,8 @@ bool HockeyGame::setUpConnections(){//upprättar anslutning AI-moduler
 		cout<<"waiting at homeplayer"<<endl;
 
 		listeningSocket->recvFrom(buf,BUFLENGTH,homeSource.adress,homeSource.port);//Väntar på handskakning från AI-modul
-		homeTeam = new TeamConnection(homeSource);//Sparar AImodulens plats
-		homeTeam->send(handshake,1);//Skickar hanskakning
+		homeTeamConnection = new TeamConnection(homeSource);//Sparar AImodulens plats
+		homeTeamConnection->send(handshake,1);//Skickar hanskakning
 
 		cout<<"home aquired at port "<<homeSource.port<<endl;
 		cout<<"waiting at awayplayer"<<endl;
@@ -29,10 +29,10 @@ bool HockeyGame::setUpConnections(){//upprättar anslutning AI-moduler
 		handshake[0]=2;//ny hanskakning för andra laget
 	
 		listeningSocket->recvFrom(buf,BUFLENGTH,awaySource.adress,awaySource.port);
-		awayTeam = new TeamConnection(awaySource);
-		awayTeam->send(handshake,4);
+		awayTeamConnection = new TeamConnection(awaySource);
+		awayTeamConnection->send(handshake,4);
 		cout<<"away aquired at port "<<awaySource.port<<endl;
-		if(homeTeam->fromSource(awaySource)){//kollar att int samma AI har anslutit igen, om så ge fel
+		if(homeTeamConnection->fromSource(awaySource)){//kollar att int samma AI har anslutit igen, om så ge fel
 			cout<<"team already aquired, next team must be on another port"<<endl;
 			return false;
 		}
@@ -100,13 +100,13 @@ void HockeyGame::stopGame(){//avslutar spelet
 		safeTerminateThread(cameraThreadHandle);
 
 		// TODO: Make/find delete and null-function
-		if (homeTeam != NULL) {
-			delete homeTeam;
-			homeTeam = NULL;
+		if (homeTeamConnection != NULL) {
+			delete homeTeamConnection;
+			homeTeamConnection = NULL;
 		}
-		if (awayTeam != NULL) {
-			delete awayTeam;
-			awayTeam = NULL;
+		if (awayTeamConnection != NULL) {
+			delete awayTeamConnection;
+			awayTeamConnection = NULL;
 		}
 		if (listeningSocket != NULL) {
 			delete listeningSocket;

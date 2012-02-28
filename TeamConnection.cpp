@@ -65,14 +65,14 @@ bool Connection::operator==(Connection b){//likamed operator för anslitning
 	return b.adress==adress&&b.port==port;
 }
 
-TeamConnection* homeTeam=0;
-TeamConnection* awayTeam=0;
+TeamConnection* homeTeamConnection=0;
+TeamConnection* awayTeamConnection=0;
 
 TeamConnection *teamFromConnection(Connection *pConnection) {
-	if (homeTeam->fromSource(*pConnection)) 
-		return homeTeam;
-	else if(awayTeam->fromSource(*pConnection))
-		return awayTeam;
+	if (homeTeamConnection->fromSource(*pConnection)) 
+		return homeTeamConnection;
+	else if(awayTeamConnection->fromSource(*pConnection))
+		return awayTeamConnection;
 	return NULL;
 }
 
@@ -81,7 +81,7 @@ unsigned __stdcall recieverThread(void* sock){
 	char homeCmd[30];
 	char awayCmd[30];
 	//######
-	if(homeTeam==NULL||awayTeam==NULL){
+	if(homeTeamConnection==NULL||awayTeamConnection==NULL){
 		cerr<<"teams not defined"<<endl;
 		exit(1);
 	}
@@ -113,7 +113,7 @@ unsigned __stdcall recieverThread(void* sock){
 						myfile << (int)(i == 3 ? (signed char)msg[i] : (unsigned char)msg[i]) << "\t";
 					}
 					// one command should now be in msg
-					if (isCommandOkay(team == homeTeam ? 0 : 1, cmd)) {
+					if (isCommandOkay(team == homeTeamConnection ? 0 : 1, cmd)) {
 						memcpy(msg + index, cmd, 5);
 						index += 5;
 						myfile << "+";
@@ -123,9 +123,9 @@ unsigned __stdcall recieverThread(void* sock){
 				}
 
 				
-				if (team == homeTeam)//skickar vidare kommandot beroende på vartifrån meddelandet kom ifrån
+				if (team == homeTeamConnection)//skickar vidare kommandot beroende på vartifrån meddelandet kom ifrån
 					homeSerial->write(msg, index);//skriver till mikrokontroller
-				else if(team == awayTeam)
+				else if(team == awayTeamConnection)
 					awaySerial->write(msg, index);			
 			}
 		}
@@ -152,9 +152,9 @@ bool checkClient(TeamConnection *pTeam) {
 
 unsigned __stdcall checkClientsProc(void *param) {
 	while (true) {
-		if (!checkClient(homeTeam))
+		if (!checkClient(homeTeamConnection))
 			((HockeyGame *)param)->stopGame();
-		if (!checkClient(awayTeam))
+		if (!checkClient(awayTeamConnection))
 			((HockeyGame *)param)->stopGame();
 		Sleep(10000);
 	}
