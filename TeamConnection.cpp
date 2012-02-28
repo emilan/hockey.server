@@ -9,10 +9,11 @@
 
 UDPSocket *listeningSocket = NULL;
 
-TeamConnection::TeamConnection(Connection source) {
+TeamConnection::TeamConnection(Connection source, char *name) {
 	connection = source;
 	socket = new UDPSocket();
 	lastAlive = 0;
+	this->name = name;
 }
 
 TeamConnection::~TeamConnection() {
@@ -61,6 +62,10 @@ bool TeamConnection::isAlive() {
 	return (currentTime - lastAlive) < 10000;
 }
 
+char *TeamConnection::getName() {
+	return this->name;
+}
+
 bool Connection::operator==(Connection b){//likamed operator för anslitning
 	return b.adress==adress&&b.port==port;
 }
@@ -75,6 +80,7 @@ TeamConnection *teamFromConnection(Connection *pConnection) {
 		return awayTeamConnection;
 	return NULL;
 }
+
 
 unsigned __stdcall recieverThread(void* sock){
 	//###### Player comands are saved here
@@ -147,7 +153,6 @@ unsigned __stdcall recieverThread(void* sock){
 bool checkClient(TeamConnection *pTeam) {
 	char c = 'D';
 	int i = 0;
-	cout << "Checking team alive..." << endl;
 
 	while (!pTeam->isAlive() && i < 5) {
 		pTeam->sendBytes(&c, 1);
@@ -155,10 +160,9 @@ bool checkClient(TeamConnection *pTeam) {
 		Sleep(1000);
 	}
 	if (!pTeam->isAlive()) {
-		cout << "Team not alive!" << endl;
+		cout << pTeam->getName() << " not alive!" << endl;
 		return false;
 	}
-	cout << "Team alive :-)" << endl;
 	return true;
 }
 

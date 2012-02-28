@@ -14,16 +14,17 @@ class TeamConnection{// klass för att sköta kommunikation med AI-modul
 	Connection connection;
 	UDPSocket* socket;
 	int lastAlive;
-	
-	public:
-		void send(int* buf,const int bufLength);
-		void sendBytes(char *buf, const int bufLength);
-		bool fromSource(Connection source);
-		void command(int com[BUFLENGTH],int length);
-		void reportAlive();
-		bool isAlive();
-		TeamConnection(Connection source);
-		~TeamConnection();
+	char *name;	
+public:
+	void send(int* buf,const int bufLength);
+	void sendBytes(char *buf, const int bufLength);
+	bool fromSource(Connection source);
+	void command(int com[BUFLENGTH],int length);
+	void reportAlive();
+	bool isAlive();
+	char *getName();
+	TeamConnection(Connection source, char *name);
+	~TeamConnection();
 };
 extern TeamConnection* homeTeamConnection;
 extern TeamConnection* awayTeamConnection;
