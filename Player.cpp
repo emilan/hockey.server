@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <vector>
 
-#include <iostream>
 using namespace std;
 
 void Player::update(unsigned char trans, unsigned char rot) {
