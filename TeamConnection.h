@@ -10,7 +10,7 @@ struct Connection{//struct för att hålla reda på anslutnng
 	bool operator==(Connection b);
 	Connection(){adress="";port=0;};
 };
-class Team{// klass för att sköta kommunikation med AI-modul
+class TeamConnection{// klass för att sköta kommunikation med AI-modul
 	Connection connection;
 	UDPSocket* socket;
 	int lastAlive;
@@ -22,11 +22,11 @@ class Team{// klass för att sköta kommunikation med AI-modul
 		void command(int com[BUFLENGTH],int length);
 		void reportAlive();
 		bool isAlive();
-		Team(Connection source);
-		~Team();
+		TeamConnection(Connection source);
+		~TeamConnection();
 };
-extern Team* homeTeam;
-extern Team* awayTeam;
+extern TeamConnection* homeTeam;
+extern TeamConnection* awayTeam;
 
 extern UDPSocket *listeningSocket;
 

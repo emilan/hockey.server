@@ -9,19 +9,19 @@
 
 UDPSocket *listeningSocket = NULL;
 
-Team::Team(Connection source) {
+TeamConnection::TeamConnection(Connection source) {
 	connection = source;
 	socket = new UDPSocket();
 	lastAlive = 0;
 }
 
-Team::~Team() {
+TeamConnection::~TeamConnection() {
 	if (socket != NULL) {
 		delete socket;
 		socket = NULL;
 	}
 }
-void Team::send(int* toSend,const int bufLength){//skickar speltillstånd till spelare
+void TeamConnection::send(int* toSend,const int bufLength){//skickar speltillstånd till spelare
 	char msg[4*39];//antal chars som beskriver speltillståndet
 
 	for (int i=0; i<bufLength; i++) {//dekonstruerar ett intfält till ett charfält
@@ -44,19 +44,19 @@ void Team::send(int* toSend,const int bufLength){//skickar speltillstånd till sp
 
 }
 
-void Team::sendBytes(char *msg, const int bufLength) {
+void TeamConnection::sendBytes(char *msg, const int bufLength) {
 	socket->sendTo(msg,bufLength,connection.adress,connection.port);//Skickar meddelandet till AI-modul
 }
 
-bool Team::fromSource(Connection source){
+bool TeamConnection::fromSource(Connection source){
 	return connection==source;
 }
 
-void Team::reportAlive() {
+void TeamConnection::reportAlive() {
 	lastAlive = getGametime();
 }
 
-bool Team::isAlive() {
+bool TeamConnection::isAlive() {
 	int currentTime = getGametime();
 	return (currentTime - lastAlive) < 10000;
 }
@@ -65,10 +65,10 @@ bool Connection::operator==(Connection b){//likamed operator för anslitning
 	return b.adress==adress&&b.port==port;
 }
 
-Team* homeTeam=0;
-Team* awayTeam=0;
+TeamConnection* homeTeam=0;
+TeamConnection* awayTeam=0;
 
-Team *teamFromConnection(Connection *pConnection) {
+TeamConnection *teamFromConnection(Connection *pConnection) {
 	if (homeTeam->fromSource(*pConnection)) 
 		return homeTeam;
 	else if(awayTeam->fromSource(*pConnection))
@@ -96,7 +96,7 @@ unsigned __stdcall recieverThread(void* sock){
 	awaySerial->write(NULL,0);
 	for(;;){// recieves commands and passes them on to correct microprocessor
 		int rcvBytes=socket->recvFrom(buf,BUFLENGTH,source.adress,source.port); //tar emot meddelande
-		Team *team = teamFromConnection(&source);
+		TeamConnection *team = teamFromConnection(&source);
 		if (team != NULL) {
 			if (rcvBytes == 1) {
 				if (buf[0] == 'N')
@@ -132,7 +132,7 @@ unsigned __stdcall recieverThread(void* sock){
 	}
 }
 
-bool checkClient(Team *pTeam) {
+bool checkClient(TeamConnection *pTeam) {
 	char c = 'D';
 	int i = 0;
 	cout << "Checking team alive..." << endl;

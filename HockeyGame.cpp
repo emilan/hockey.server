@@ -20,7 +20,7 @@ bool HockeyGame::setUpConnections(){//upprättar anslutning AI-moduler
 		cout<<"waiting at homeplayer"<<endl;
 
 		listeningSocket->recvFrom(buf,BUFLENGTH,homeSource.adress,homeSource.port);//Väntar på handskakning från AI-modul
-		homeTeam = new Team(homeSource);//Sparar AImodulens plats
+		homeTeam = new TeamConnection(homeSource);//Sparar AImodulens plats
 		homeTeam->send(handshake,1);//Skickar hanskakning
 
 		cout<<"home aquired at port "<<homeSource.port<<endl;
@@ -29,7 +29,7 @@ bool HockeyGame::setUpConnections(){//upprättar anslutning AI-moduler
 		handshake[0]=2;//ny hanskakning för andra laget
 	
 		listeningSocket->recvFrom(buf,BUFLENGTH,awaySource.adress,awaySource.port);
-		awayTeam = new Team(awaySource);
+		awayTeam = new TeamConnection(awaySource);
 		awayTeam->send(handshake,4);
 		cout<<"away aquired at port "<<awaySource.port<<endl;
 		if(homeTeam->fromSource(awaySource)){//kollar att int samma AI har anslutit igen, om så ge fel
