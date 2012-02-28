@@ -88,7 +88,8 @@ unsigned __stdcall recieverThread(void* sock){
 	Connection source=Connection();
 	UDPSocket* socket=(UDPSocket*) sock;
 	char buf[BUFLENGTH];//läst meddelande
-	char msg[BUFLENGTH/4+1];//formaterat medelande
+	char msg[BUFLENGTH/4+1]; //formaterat medelande
+	char err[BUFLENGTH/4+1]; //formaterat svar, misslyckade kommandon
 
 	ofstream myfile=ofstream();		//DEBUGVERKTYG
 	myfile.open ("commands.txt");	//öpnnar fil där kommandon sparas
@@ -96,14 +97,15 @@ unsigned __stdcall recieverThread(void* sock){
 	awaySerial->write(NULL,0);
 	for(;;){// recieves commands and passes them on to correct microprocessor
 		int rcvBytes=socket->recvFrom(buf,BUFLENGTH,source.adress,source.port); //tar emot meddelande
-		TeamConnection *team = teamFromConnection(&source);
-		if (team != NULL) {
+		TeamConnection *teamC = teamFromConnection(&source);
+		if (teamC != NULL) {
 			if (rcvBytes == 1) {
 				if (buf[0] == 'N')
-					team->reportAlive();
+					teamC->reportAlive();
 			}
 			else if ((rcvBytes % (5 * 4)) == 0) {
 				int index = 0;
+				int errIndex = 0;
 				int cmdIndex = 0;
 				for (int cmdIndex = 0; cmdIndex < rcvBytes / 5 / 4; cmdIndex++) {
 					myfile << getGametime() << "\t";			//sparar speltiden när kommandot mottogs
@@ -113,19 +115,29 @@ unsigned __stdcall recieverThread(void* sock){
 						myfile << (int)(i == 3 ? (signed char)msg[i] : (unsigned char)msg[i]) << "\t";
 					}
 					// one command should now be in msg
-					if (isCommandOkay(team == homeTeamConnection ? 0 : 1, cmd)) {
+					if (isCommandOkay(teamC == homeTeamConnection ? 0 : 1, cmd)) {
 						memcpy(msg + index, cmd, 5);
 						index += 5;
 						myfile << "+";
 					}
-					else myfile << "-";
+					else {
+						memcpy(err + errIndex, cmd, 5);
+						errIndex += 5;
+						myfile << "-";
+					}
 					myfile<<endl;
 				}
 
+				if (errIndex > 0) {
+					int errMessage[BUFLENGTH/4 + 1];
+					for (int i = 0; i < errIndex; i++) 
+						errMessage[i] = (int)(i % 5 == 3 ? (signed char)err[i] : (unsigned char)err[i]);
+					teamC->send(errMessage, errIndex);
+				}
 				
-				if (team == homeTeamConnection)//skickar vidare kommandot beroende på vartifrån meddelandet kom ifrån
+				if (teamC == homeTeamConnection)//skickar vidare kommandot beroende på vartifrån meddelandet kom ifrån
 					homeSerial->write(msg, index);//skriver till mikrokontroller
-				else if(team == awayTeamConnection)
+				else if(teamC == awayTeamConnection)
 					awaySerial->write(msg, index);			
 			}
 		}
