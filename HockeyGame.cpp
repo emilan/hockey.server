@@ -63,7 +63,8 @@ bool HockeyGame::initPlayerPositions() {
 		for (int j = 0; j < 6; j++) {
 			char fileName[20];
 			sprintf(fileName, "player%d%d.txt", i, j);
-			pTeam->getPlayer(i)->readLocations(fileName);
+			if (!pTeam->getPlayer(i)->readLocations(fileName))
+				return false;
 		}
 	}
 	return true;
@@ -75,6 +76,7 @@ bool HockeyGame::initializeGame(){
 		running=true;
 		if (!initPlayerPositions()) {
 			running = false;
+			cout << "Failed reading player positions" << endl;
 			return running;
 		}
 		if(!setUpCamera()){//avbryter starten om inte kameran kan startas

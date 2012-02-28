@@ -18,17 +18,23 @@ PlayerLocation Player::getLocation() {
 	return this->locations[this->trans];
 }
 
-void Player::readLocations(char *fileName) {
+bool Player::readLocations(char *fileName) {
+	vector<PlayerLocation> points;
 	FILE *pFile = fopen(fileName, "r");
+	if (pFile == NULL)
+		return false;
+
 	int x, y;
 
-	vector<PlayerLocation> points;
 	while (fscanf(pFile, "%d %d", &x, &y) != EOF) {
 		PlayerLocation loc = { x, y };
 		points.push_back(loc);
 	}
 	fclose(pFile);
-	
+
+	if (points.size() < 2)
+		return false;
+
 	PlayerLocation *relative = new PlayerLocation[points.size()];
 	double *lengths = new double[points.size()];
 	
@@ -54,6 +60,8 @@ void Player::readLocations(char *fileName) {
 
 	delete[] relative;
 	delete[] lengths;
+
+	return true;
 }
 
 PlayerLocation PlayerLocation::subtract(PlayerLocation loc) {

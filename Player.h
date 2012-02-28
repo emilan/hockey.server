@@ -19,7 +19,7 @@ public:
 	void update(unsigned char trans, unsigned char rot);
 	unsigned char getTrans();
 	PlayerLocation getLocation();
-	void readLocations(char *fileName);
+	bool readLocations(char *fileName);
 };
 
 #endif //__PLAYER_H__
