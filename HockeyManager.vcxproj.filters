@@ -101,9 +101,6 @@
     <ClInclude Include="SerialClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="serialcomm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Limits.h">
       <Filter>Header Files</Filter>
     </ClInclude>

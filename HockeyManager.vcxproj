@@ -91,7 +91,6 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PracticalSocket.h" />
     <ClInclude Include="SerialClass.h" />
-    <ClInclude Include="serialcomm.h" />
     <ClInclude Include="calibrateMicroController.h" />
     <ClInclude Include="CalibrationMode.h" />
     <ClInclude Include="CamCapture.h" />
