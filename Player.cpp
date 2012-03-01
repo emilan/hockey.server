@@ -13,8 +13,12 @@ unsigned char Player::getTrans() {
 	return this->trans;
 }
 
-PlayerLocation Player::getLocation() {
-	return this->locations[this->trans];
+PlayerLocation Player::getLocation(int trans) {
+	return this->locations[trans];
+}
+
+PlayerLocation Player::getCurrentLocation() {
+	return getLocation(this->trans);
 }
 
 bool Player::readLocations(char *fileName) {

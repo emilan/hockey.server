@@ -18,7 +18,8 @@ private:
 public:
 	void update(unsigned char trans, unsigned char rot);
 	unsigned char getTrans();
-	PlayerLocation getLocation();
+	PlayerLocation getCurrentLocation();
+	PlayerLocation getLocation(int trans);
 	bool readLocations(char *fileName);
 };
 

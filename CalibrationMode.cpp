@@ -1,5 +1,8 @@
 #include "CalibrationMode.h"
 #include "GameState.h"
+
+#define WND_TOOLBAR	"toolbar"
+
 void calibrate(){
 	cout<<"Camera Calibrator"<<endl;
 	cout<<"s - save color to file"<<endl
@@ -11,13 +14,13 @@ void calibrate(){
 		,smax=255
 		,vmin=0
 		,vmax=255;
-	cvNamedWindow("toolbar",1);//skapar en toolbar med sliders och binder dem till färgvärden.
-    cvCreateTrackbar( "H Min", "toolbar", &hmin, 360, 0 );
-    cvCreateTrackbar( "H Max", "toolbar", &hmax, 360, 0 );
-    cvCreateTrackbar( "S Min", "toolbar", &smin, 256, 0 );
-	cvCreateTrackbar( "S Max", "toolbar", &smax, 256, 0 );
-    cvCreateTrackbar( "V Min", "toolbar", &vmin, 256, 0 );
-    cvCreateTrackbar( "V Max", "toolbar", &vmax, 256, 0 );
+	cvNamedWindow(WND_TOOLBAR,1);//skapar en toolbar med sliders och binder dem till färgvärden.
+    cvCreateTrackbar( "H Min", WND_TOOLBAR, &hmin, 360, 0 );
+    cvCreateTrackbar( "H Max", WND_TOOLBAR, &hmax, 360, 0 );
+    cvCreateTrackbar( "S Min", WND_TOOLBAR, &smin, 256, 0 );
+	cvCreateTrackbar( "S Max", WND_TOOLBAR, &smax, 256, 0 );
+    cvCreateTrackbar( "V Min", WND_TOOLBAR, &vmin, 256, 0 );
+    cvCreateTrackbar( "V Max", WND_TOOLBAR, &vmax, 256, 0 );
 	
 	bool calibrating=true;
 	track_puck.setCalibrationMode(true);//track_puck objektet sätts i kalibreringsmode -> den visar bilder
@@ -41,5 +44,5 @@ void calibrate(){
 		}
 	}
 	track_puck.setCalibrationMode(false);
-	cvDestroyWindow("toolbar");
+	cvDestroyWindow(WND_TOOLBAR);
 }

@@ -97,6 +97,7 @@ unsigned __stdcall cameraThread(void* param){
 }
 
 unsigned __stdcall senderThread(void* param){
+	IplImage *pImg = cvCreateImage(cvSize(750, 350), 8, 1);
 
 	cout<<"senderthread started"<<endl;
 	const int MESSAGELENGTH=29;
@@ -119,6 +120,22 @@ unsigned __stdcall senderThread(void* param){
 
 		homeTeam.update(homeStatus);
 		awayTeam.update(awayStatus);
+
+		cvRectangle(pImg, cvPoint(0, 0), cvPoint(750, 400), cvScalar(0, 0, 0, 0), CV_FILLED);
+		for (int i = 0; i < 2; i++) {
+			Team *pTeam = teamFromId(i);
+			for (int j = 0; j < 6; j++) {
+				Player * pPlayer = pTeam->getPlayer(j);
+				for (int k = 0; k < 256; k++) {
+					PlayerLocation loc = pPlayer->getLocation(k);
+					cvCircle(pImg, cvPoint(loc.x, loc.y), 2, cvScalar(128, 128, 128, 255), CV_FILLED);
+				}
+				PlayerLocation loc = pPlayer->getCurrentLocation();
+				cvCircle(pImg, cvPoint(loc.x, loc.y), 3, cvScalar(255, 0, 0, 255), CV_FILLED);
+			}
+		}
+		cvShowImage("test", pImg);
+		cvWaitKey(1);
 
 		int index=0;
 		awayMessage[index]   = awayTeam.getGoals();

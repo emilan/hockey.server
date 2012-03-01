@@ -45,6 +45,7 @@ bool HockeyGame::setUpGamestate(){
 	if(!initializeMicroControllers()){
 		return false;
 	}
+
 	senderThreadHandle=(HANDLE)_beginthreadex(NULL,0,senderThread,NULL,CREATE_SUSPENDED,NULL);//skapar tråden pausad
 	
 	return true;
@@ -63,7 +64,7 @@ bool HockeyGame::initPlayerPositions() {
 		for (int j = 0; j < 6; j++) {
 			char fileName[20];
 			sprintf(fileName, "player%d%d.txt", i, j);
-			if (!pTeam->getPlayer(i)->readLocations(fileName))
+			if (!pTeam->getPlayer(j)->readLocations(fileName))
 				return false;
 		}
 	}
