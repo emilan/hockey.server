@@ -97,7 +97,22 @@ unsigned __stdcall cameraThread(void* param){
 }
 
 unsigned __stdcall senderThread(void* param){
-	IplImage *pImg = cvCreateImage(cvSize(750, 350), 8, 1);
+	const int width = 800;
+	const int height = 400;
+	CvPoint center = cvPoint(width / 2, height / 2);
+	IplImage *pImg = cvCreateImage(cvSize(width, height), 8, 3);
+	IplImage *pImgBg = cvCreateImage(cvSize(width, height), 8, 3);
+	cvRectangle(pImgBg, cvPoint(0, 0), cvPoint(width, height), cvScalar(0, 0, 0, 0), CV_FILLED);
+	for (int i = 0; i < 2; i++) {
+		Team *pTeam = teamFromId(i);
+		for (int j = 0; j < 6; j++) {
+			Player * pPlayer = pTeam->getPlayer(j);
+			for (int k = 0; k < 256; k++) {
+				PlayerLocation loc = pPlayer->getLocation(k);
+				cvCircle(pImgBg, cvPoint(center.x - loc.x, center.y + loc.y), 2, cvScalar(128, 128, 128, 255), CV_FILLED);
+			}
+		}
+	}
 
 	cout<<"senderthread started"<<endl;
 	const int MESSAGELENGTH=29;
@@ -121,56 +136,70 @@ unsigned __stdcall senderThread(void* param){
 		homeTeam.update(homeStatus);
 		awayTeam.update(awayStatus);
 
-		cvRectangle(pImg, cvPoint(0, 0), cvPoint(750, 400), cvScalar(0, 0, 0, 0), CV_FILLED);
+		
+		static clock_t tOld = 0;
+		static unsigned char counter = 0;
+		static double fps = 0;
+		if (++counter == 20) {
+			clock_t tNew = clock();
+			fps = 20.0 / (1.0 * (tNew - tOld) / CLOCKS_PER_SEC);
+			tOld = tNew;
+			counter = 0;
+		}
+		CvScalar colorFinland = cvScalar(255, 255, 255, 255);
+		CvScalar colorSweden = cvScalar(0, 255, 255, 255);
+		cvCopy(pImgBg, pImg, NULL);
 		for (int i = 0; i < 2; i++) {
 			Team *pTeam = teamFromId(i);
 			for (int j = 0; j < 6; j++) {
 				Player * pPlayer = pTeam->getPlayer(j);
-				for (int k = 0; k < 256; k++) {
-					PlayerLocation loc = pPlayer->getLocation(k);
-					cvCircle(pImg, cvPoint(loc.x, loc.y), 2, cvScalar(128, 128, 128, 255), CV_FILLED);
-				}
 				PlayerLocation loc = pPlayer->getCurrentLocation();
-				cvCircle(pImg, cvPoint(loc.x, loc.y), 3, cvScalar(255, 0, 0, 255), CV_FILLED);
+				cvCircle(pImg, cvPoint(center.x - loc.x, center.y + loc.y), 3, i == 0 ? colorSweden : colorFinland, CV_FILLED);
 			}
 		}
+		char buf[20];
+		sprintf_s(buf, "FPS: %f", fps);
+		cvPutText(pImg, buf, cvPoint(0, 20), &cvFont(1), cvScalar(255, 255, 255, 255));
 		cvShowImage("test", pImg);
 		cvWaitKey(1);
 
-		int index=0;
-		awayMessage[index]   = awayTeam.getGoals();
-		homeMessage[index++] = homeTeam.getGoals();
+		if ((homeTeamConnection != NULL) && 
+			(awayTeamConnection != NULL)) {
+			int index=0;
+			awayMessage[index]   = awayTeam.getGoals();
+			homeMessage[index++] = homeTeam.getGoals();
 
-		awayMessage[index]   = homeTeam.getGoals();
-		homeMessage[index++] = awayTeam.getGoals();
+			awayMessage[index]   = homeTeam.getGoals();
+			homeMessage[index++] = awayTeam.getGoals();
 
-		awayMessage[index]=puck.x;
-		homeMessage[index++]=puck.x;
+			awayMessage[index]=puck.x;
+			homeMessage[index++]=puck.x;
 
-		awayMessage[index]=puck.y;
-		homeMessage[index++]=puck.y;
+			awayMessage[index]=puck.y;
+			homeMessage[index++]=puck.y;
 
-		awayMessage[index]=getGametime();
-		homeMessage[index++]=getGametime();
+			awayMessage[index]=getGametime();
+			homeMessage[index++]=getGametime();
 
-		myfile<<getGametime()<<"\t";
-		for(int i=0;i<12;i++){
-			awayMessage[index]=(awayStatus[i]&0xff);//awayStatus[i];
-			homeMessage[index++]=(homeStatus[i]&0xff);
+			myfile<<getGametime()<<"\t";
+			for(int i=0;i<12;i++){
+				awayMessage[index]=(awayStatus[i]&0xff);//awayStatus[i];
+				homeMessage[index++]=(homeStatus[i]&0xff);
 			
-			myfile << (int)homeStatus[i] << "\t";	
-		}
+				myfile << (int)homeStatus[i] << "\t";	
+			}
 		
-		for(int i=0;i<12;i++){
-			awayMessage[index]=(homeStatus[i]&0xff);
-			homeMessage[index++]=(awayStatus[i]&0xff);//awayStatus[i];
+			for(int i=0;i<12;i++){
+				awayMessage[index]=(homeStatus[i]&0xff);
+				homeMessage[index++]=(awayStatus[i]&0xff);//awayStatus[i];
 			
-			myfile << (int)awayStatus[i] << "\t";	
-		}
+				myfile << (int)awayStatus[i] << "\t";	
+			}
 		
-		myfile<<endl;
-		homeTeamConnection->send(awayMessage,MESSAGELENGTH);
-		awayTeamConnection->send(homeMessage,MESSAGELENGTH);
+			myfile<<endl;
+			homeTeamConnection->send(awayMessage,MESSAGELENGTH);
+			awayTeamConnection->send(homeMessage,MESSAGELENGTH);
+		}
 		//cout<<clock()-t<<endl;;
 		
 	}
