@@ -1,5 +1,6 @@
 #include "GUI.h"
 #include "Team.h"
+#include "Puck.h"
 
 #include "cv.h"
 #include "highgui.h"
@@ -46,6 +47,11 @@ void draw() {
 			cvLine(pImg, playerCenter, playerClub, playerColor, 3);
 		}
 	}
+
+	PuckPosition pos = getPuckPosition();
+	CvScalar puckColor = cvScalar(0, 255, 0, 255);
+	cvCircle(pImg, cvPoint(WIDTH / 2 + pos.x, HEIGHT / 2 + pos.y), 11, puckColor);
+
 	char buf[20];
 	sprintf_s(buf, "FPS: %f", fps);
 	cvPutText(pImg, buf, cvPoint(0, 20), &cvFont(1), cvScalar(255, 255, 255, 255));

@@ -28,8 +28,8 @@ Puck::Puck(IplImage* frame) {
 	goal1 = cvPoint2D32f(62, 117);	//skapar punkter med målens ungefärliga position
 	goal2 = cvPoint2D32f(324, 116);
 		
-	track_goal1.trackObject(frame, &goal1, false);	//hittar målens position
-	track_goal2.trackObject(frame, &goal2, false);
+	//track_goal1.trackObject(frame, &goal1, false);	//hittar målens position
+	//track_goal2.trackObject(frame, &goal2, false);
 }
 
 void Puck::updatePosition(CvPoint2D32f* ps){
@@ -60,6 +60,7 @@ namespace puckns {
 	Puck puck;
 
 	bool trackingInitialized = false;
+	volatile bool trackingPuck = false;
 	HANDLE cameraThreadHandle;
 }
 using namespace puckns;
@@ -69,7 +70,7 @@ unsigned __stdcall cameraThread(void* param) {
 	IplImage* frame = cvCreateImage(IMAGESIZE, 8, 3);//skapar en buffer för en bild
 	int t0 = 0, t1 = 0, t2 = 0, t3 = 0; //DEBUGVERKTYG
 
-	while (true) {
+	while (trackingPuck) {
 		t0 = clock();
 		//fyller buffren med en ny bild
 		capture->myQueryFrame(frame); //40ms
@@ -107,17 +108,22 @@ bool initializeTracking() {
 		IplImage* frame = cvCreateImage(IMAGESIZE, 8, 3);
 		capture->myQueryFrame(frame);
 		puck = Puck(frame);
+		
+		startTrackingPuck();
 	}
-	cameraThreadHandle = (HANDLE)_beginthreadex(NULL, 0, cameraThread, NULL, CREATE_SUSPENDED, NULL);//skapar kameratråden pausad
 	return true;
 }
 
 void startTrackingPuck() {
-	ResumeThread(cameraThreadHandle);
+	if (!trackingPuck) {
+		trackingPuck = true;
+		_beginthreadex(NULL, 0, cameraThread, NULL, 0, NULL);
+	}
 }
 
 void stopTrackingPuck() {
-	SuspendThread(cameraThreadHandle);
+	if (trackingPuck)
+		trackingPuck = false;
 }
 
 PuckPosition getPuckPosition() {

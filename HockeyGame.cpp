@@ -101,7 +101,6 @@ bool hockeygame::initialize() {
 	}
 	else if (!initializeTracking()) {
 		cout << "Failed to initialize camera!";
-		startTrackingPuck();
 		return false;
 	}
 

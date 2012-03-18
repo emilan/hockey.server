@@ -17,9 +17,6 @@ void calibrateCamera() {
 	cout << "s - save color to file" << endl
 		 << "q - quit calibration" << endl;
 
-	// startar bildhantering
-	initializeTracking(); 
-
 	// definierar max/min på möjliga färgvärden
 	int hmin = 0
 	   ,hmax = 255
