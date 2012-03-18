@@ -68,7 +68,11 @@ unsigned __stdcall drawingThread(void* param){
 void startDrawing() {
 	pImg = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);
 	pImgBg = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);
+	IplImage *pImgAreas = cvLoadImage("areas.png", CV_LOAD_IMAGE_UNCHANGED);
 	cvRectangle(pImgBg, cvPoint(0, 0), cvPoint(WIDTH, HEIGHT), cvScalar(0, 0, 0, 0), CV_FILLED);
+	CvSize size1 = cvGetSize(pImgAreas);
+	CvSize size2 = cvGetSize(pImgBg);
+	cvAdd(pImgAreas, pImgBg, pImgBg, 0);
 	for (int i = 0; i < 2; i++) {
 		Team *pTeam = getTeamById(i);
 		for (int j = 0; j < 6; j++) {
