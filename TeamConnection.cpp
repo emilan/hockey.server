@@ -1,14 +1,13 @@
 #include "TeamConnection.h"
-#include <iostream>
-#include <process.h>
-#include "GameState.h"
-#include <fstream>
 #include "Gametime.h"
-#include "HockeyGame.h"
 #include "Limits.h"
 
-UDPSocket *listeningSocket = NULL;
+#include <iostream>
+#include <process.h>
+#include <Windows.h>
+#include <fstream>
 
+// Class methods
 TeamConnection::TeamConnection(Connection source, char *name) {
 	connection = source;
 	socket = new UDPSocket();
@@ -22,35 +21,30 @@ TeamConnection::~TeamConnection() {
 		socket = NULL;
 	}
 }
-void TeamConnection::send(int* toSend,const int bufLength){//skickar speltillstånd till spelare
-	char msg[4*39];//antal chars som beskriver speltillståndet
 
-	for (int i=0; i<bufLength; i++) {//dekonstruerar ett intfält till ett charfält
+void TeamConnection::send(int *toSend, const int bufLength){ //skickar speltillstånd till spelare
+	char msg[4*39]; //antal chars som beskriver speltillståndet
+
+	for (int i=0; i<bufLength; i++) { //dekonstruerar ett intfält till ett charfält
 		int x = toSend[i];
 		int j = i << 2;
 
-		msg[j++] = (byte) ((x >> 0) & 0xff);  // läser en byte i taget i varje int
-
-		msg[j++] = (byte) ((x >> 8) & 0xff);
-		msg[j++] = (byte) ((x >> 16) & 0xff);
-		msg[j++] = (byte) ((x >> 24) & 0xff);
+		msg[j++] = (unsigned char) ((x >> 0) & 0xff);  // läser en byte i taget i varje int
+		msg[j++] = (unsigned char) ((x >> 8) & 0xff);
+		msg[j++] = (unsigned char) ((x >> 16) & 0xff);
+		msg[j++] = (unsigned char) ((x >> 24) & 0xff);
 
 	}
-	/*for(int k=4*9;k<4*10;k++){
-		int a=msg[k];
-		cout<<a<<"\t";
-	}
-	cout<<endl;*/
-	socket->sendTo(msg,4*bufLength,connection.adress,connection.port);//Skickar meddelandet till AI-modul
 
+	sendBytes(msg, 4 * bufLength);
 }
 
 void TeamConnection::sendBytes(char *msg, const int bufLength) {
-	socket->sendTo(msg,bufLength,connection.adress,connection.port);//Skickar meddelandet till AI-modul
+	socket->sendTo(msg, bufLength, connection.adress, connection.port);
 }
 
-bool TeamConnection::fromSource(Connection source){
-	return connection==source;
+bool TeamConnection::isFromSource(Connection source) {
+	return connection == source;
 }
 
 void TeamConnection::reportAlive() {
@@ -66,57 +60,83 @@ char *TeamConnection::getName() {
 	return this->name;
 }
 
-bool Connection::operator==(Connection b){//likamed operator för anslitning
-	return b.adress==adress&&b.port==port;
+bool Connection::operator==(Connection b){ 
+	return b.adress==adress && b.port==port;
 }
 
-TeamConnection* homeTeamConnection=0;
-TeamConnection* awayTeamConnection=0;
+// Instances
+namespace teamconnectionns {
+	UDPSocket *listeningSocket = NULL;
+
+	TeamConnection* homeTeamConnection = NULL;
+	TeamConnection* awayTeamConnection = NULL;
+
+	HANDLE networkReceiverThreadHandle;
+	HANDLE clientsAliveThreadHandle;
+
+	void(*homeCommandsReceived)(char *, int) = NULL;
+	void(*awayCommandsReceived)(char *, int) = NULL;
+
+	bool listening;
+}
+using namespace teamconnectionns;
 
 TeamConnection *teamFromConnection(Connection *pConnection) {
-	if (homeTeamConnection->fromSource(*pConnection)) 
+	if (homeTeamConnection->isFromSource(*pConnection)) 
 		return homeTeamConnection;
-	else if(awayTeamConnection->fromSource(*pConnection))
+	else if(awayTeamConnection->isFromSource(*pConnection))
 		return awayTeamConnection;
 	return NULL;
 }
 
+TeamConnection* getHomeTeamConnection() {
+	return homeTeamConnection;
+}
 
-unsigned __stdcall recieverThread(void* sock){
+TeamConnection* getAwayTeamConnection() {
+	return awayTeamConnection;
+}
+
+unsigned __stdcall networkReceiverThread(void *param) {
 	//###### Player comands are saved here
 	char homeCmd[30];
 	char awayCmd[30];
 	//######
-	if(homeTeamConnection==NULL||awayTeamConnection==NULL){
-		cerr<<"teams not defined"<<endl;
+
+	if (homeTeamConnection == NULL || awayTeamConnection == NULL) {
+		cerr << "teams not defined" << endl;
 		exit(1);
 	}
-	Connection source=Connection();
-	UDPSocket* socket=(UDPSocket*) sock;
-	char buf[BUFLENGTH];//läst meddelande
-	char msg[BUFLENGTH/4+1]; //formaterat medelande
-	char err[BUFLENGTH/4+1]; //formaterat svar, misslyckade kommandon
 
-	ofstream myfile=ofstream();		//DEBUGVERKTYG
-	myfile.open ("commands.txt");	//öpnnar fil där kommandon sparas
-	homeSerial->write(NULL,0);//slutar kalibrara mikrokontrollerna när spelet börjar
-	awaySerial->write(NULL,0);
-	for(;;){// recieves commands and passes them on to correct microprocessor
-		int rcvBytes=socket->recvFrom(buf,BUFLENGTH,source.adress,source.port); //tar emot meddelande
+	Connection source = Connection();
+	char buf[BUFLENGTH];	 // läst meddelande
+	char msg[BUFLENGTH/4+1]; // formaterat medelande
+	char err[BUFLENGTH/4+1]; // formaterat svar, misslyckade kommandon
+
+	ofstream myfile = ofstream();	// DEBUGVERKTYG
+	myfile.open ("commands.txt");	// öpnnar fil där kommandon sparas
+	
+	// TODO: These shouldn't be here!
+	//pHomeSerial->write(NULL, 0);		// slutar kalibrara mikrokontrollerna när spelet börjar
+	//pAwaySerial->write(NULL, 0);
+
+	while(listening) {// recieves commands and passes them on to correct microprocessor
+		int rcvBytes = listeningSocket->recvFrom(buf,BUFLENGTH,source.adress,source.port); //tar emot meddelande
 		TeamConnection *teamC = teamFromConnection(&source);
 		if (teamC != NULL) {
-			if (rcvBytes == 1) {
-				if (buf[0] == 'N')
+			if (rcvBytes == 1) {					
+				if (buf[0] == 'N')					// heartbeat protocol
 					teamC->reportAlive();
 			}
-			else if ((rcvBytes % (5 * 4)) == 0) {
+			else if ((rcvBytes % (5 * 4)) == 0) {	// contains command(s)
 				int index = 0;
 				int errIndex = 0;
 				int cmdIndex = 0;
 				for (int cmdIndex = 0; cmdIndex < rcvBytes / 5 / 4; cmdIndex++) {
-					myfile << getGametime() << "\t";			//sparar speltiden när kommandot mottogs
+					myfile << getGametime() << "\t";	//sparar speltiden när kommandot mottogs
+
 					char cmd[5];
-					for (int i = 0; i < 5; i++) {	//läser intfält som ett charfält av kommandon
+					for (int i = 0; i < 5; i++) {		//läser intfält som ett charfält av kommandon
 						cmd[i] = buf[cmdIndex * 5 * 4 + i * 4];
 						myfile << (int)(i == 3 ? (signed char)msg[i] : (unsigned char)msg[i]) << "\t";
 					}
@@ -141,10 +161,11 @@ unsigned __stdcall recieverThread(void* sock){
 					teamC->send(errMessage, errIndex);
 				}
 				
-				if (teamC == homeTeamConnection)//skickar vidare kommandot beroende på vartifrån meddelandet kom ifrån
-					homeSerial->write(msg, index);//skriver till mikrokontroller
-				else if(teamC == awayTeamConnection)
-					awaySerial->write(msg, index);			
+				//skickar vidare kommandot beroende på vartifrån meddelandet kom ifrån
+				if (teamC == homeTeamConnection && homeCommandsReceived != NULL)
+					homeCommandsReceived(msg, index);
+				else if(teamC == awayTeamConnection && awayCommandsReceived != NULL)
+					awayCommandsReceived(msg, index);
 			}
 		}
 	}
@@ -167,11 +188,91 @@ bool checkClient(TeamConnection *pTeam) {
 }
 
 unsigned __stdcall checkClientsProc(void *param) {
-	while (true) {
+	void(*stopFunction)(void) = (void(*)(void))param;
+
+	while (listening) {
 		if (!checkClient(homeTeamConnection))
-			((HockeyGame *)param)->stopGame();
+			stopFunction();
 		if (!checkClient(awayTeamConnection))
-			((HockeyGame *)param)->stopGame();
+			stopFunction();
 		Sleep(10000);
+	}
+	return 0;
+}
+
+// upprättar anslutning till AI-moduler (spelprogramvara)
+bool setUpConnections(void(*stopFunction)(void), 
+	void(*homeCmdsReceived)(char *msg, int length), 
+	void(*awayCmdsReceived)(char *msg, int length))
+{
+	if (homeTeamConnection==NULL || awayTeamConnection==NULL) {
+		listeningSocket = new UDPSocket(PORT); // objekt för udp-kommunikation
+
+		Connection homeSource = Connection(); // objekt som innehåller information om anslutningar, se TeamConnection.cpp
+		Connection awaySource = Connection();
+		char* buf[BUFLENGTH]; // skapar en buffert i minnet att lägga motagna meddelanden
+
+		int handshake[] = {1}; // skapar ett handskaknings meddelande
+
+		cout << "waiting at homeplayer" << endl;
+
+		listeningSocket->recvFrom(buf, BUFLENGTH, homeSource.adress, homeSource.port);//Väntar på handskakning från AI-modul
+		homeTeamConnection = new TeamConnection(homeSource, "Home team");//Sparar AImodulens plats
+		homeTeamConnection->send(handshake, 1);//Skickar hanskakning
+
+		cout << "home aquired at port " << homeSource.port << endl;
+		cout << "waiting at awayplayer" << endl;
+
+		handshake[0] = 2;//ny hanskakning för andra laget
+	
+		listeningSocket->recvFrom(buf, BUFLENGTH, awaySource.adress, awaySource.port);
+		awayTeamConnection = new TeamConnection(awaySource, "Away team");
+		awayTeamConnection->send(handshake, 4);
+		cout << "away aquired at port "<< awaySource.port << endl;
+		if (homeTeamConnection->isFromSource(awaySource)) { //kollar att int samma AI har anslutit igen, om så ge fel
+			cout << "team already aquired, next team must be on another port" << endl;
+			return false;
+		}
+
+		homeCommandsReceived = homeCmdsReceived;
+		awayCommandsReceived = awayCmdsReceived;
+
+		networkReceiverThreadHandle = (HANDLE)_beginthreadex(NULL, 0, networkReceiverThread, NULL, CREATE_SUSPENDED, NULL);
+		clientsAliveThreadHandle = (HANDLE)_beginthreadex(NULL, 0, checkClientsProc, (void*)stopFunction, CREATE_SUSPENDED, NULL);
+	}
+	return true;
+}
+
+void startListening() {
+	listening = true;
+	resumeListening();
+}
+
+void pauseListening() {
+	SuspendThread(networkReceiverThreadHandle);
+	SuspendThread(clientsAliveThreadHandle);
+}
+
+void resumeListening() {
+	ResumeThread(networkReceiverThreadHandle);
+	ResumeThread(clientsAliveThreadHandle);
+}
+
+void stopListening() {
+	listening = false;
+	// TODO: Is this really the best/safest way?
+	TerminateThread(networkReceiverThreadHandle, 0);
+
+	if (homeTeamConnection != NULL) {
+		delete homeTeamConnection;
+		homeTeamConnection = NULL;
+	}
+	if (awayTeamConnection != NULL) {
+		delete awayTeamConnection;
+		awayTeamConnection = NULL;
+	}
+	if (listeningSocket != NULL) {
+		delete listeningSocket;
+		listeningSocket = NULL;
 	}
 }

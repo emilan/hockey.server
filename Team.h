@@ -13,4 +13,10 @@ public:
 	Player *getPlayer(int id);
 };
 
+Team *getTeamById(int id);
+Team *getHomeTeam();
+Team *getAwayTeam();
+
+bool initPlayerPositions();
+
 #endif //__TEAM_H__

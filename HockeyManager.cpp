@@ -1,45 +1,49 @@
-#include <iostream>
 #include "HockeyManager.h"
-#include <conio.h>
 #include "HockeyGame.h"
-#include "CalibrationMode.h"
-#include "calibrateMicroController.h"
+
+#include <iostream>
+#include <conio.h>
+
 using namespace std;
+
 int main() {
-	bool quit=false;
+	if (!hockeygame::initialize())
+		return 1;
+
+	bool quit = false;
 	greeter();	//skriver ut välkomsttext
 	showHelp();	// skriver ut hjälp
-	HockeyGame game = HockeyGame();
+
 	while(!quit) {
 		switch(getch()) {	//lyssnar efter input från tangetbord
 		case 'i':
-				cout << "initializing" << endl;
-				game.initializeGame();
+				cout << "starting..." << endl;
+				hockeygame::startGame();
 			break;
 		case 'p':
 				cout << "pausing" << endl;
-				game.pauseGame();	
+				hockeygame::pauseGame();
 			break;
 		case 'r':
 				cout << "resuming" << endl;
-				game.resumeGame();
+				hockeygame::resumeGame();
 			break;
 		case 's':
 				cout << "stopping" << endl;
-				game.stopGame();
+				hockeygame::stopGame();
 			break;
 		case 'q':
 			quit = true;	// avslutar loopen
 			cout << "quiting" << endl;
 			break;
 		case 'a':
-			calibrate();	// startar bildkalibrerings program
+			hockeygame::calibrateCamera();
 			break;
 		case 'h':
 			showHelp();
 			break;
 		case 'c':
-			calibrateMicroControllers();
+			hockeygame::calibrateMicroControllers();
 			break;
 		default:
 			;
@@ -47,16 +51,16 @@ int main() {
 	}
 }
 
-void showHelp(){
-	cout << "i - initialize game" << endl
+void showHelp() {
+	cout << "i - start game" << endl
 		 << "p - pause game" << endl
 		 << "s - stop game" << endl
 		 << "q - quit game" << endl
 		 << "h - show this help" << endl
 		 << "c - calibrate microcontrollers" << endl
 		 << "a - calibrate image processing" << endl;
-
 }
-void greeter(){
+
+void greeter() {
 	cout << "Welcome to the Hockey Server program" << endl;
 }

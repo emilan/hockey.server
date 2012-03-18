@@ -1,182 +1,178 @@
 #include "HockeyGame.h"
-#include "PracticalSocket.h"
 #include "TeamConnection.h"
-#include <iostream>
-#include "GameState.h"
-#include "SerialConnection.h"
 #include "Gametime.h"
+#include "Puck.h"
+#include "GUI.h"
+#include "Team.h"
+#include "MicroControllers.h"
+#include "CameraCalibration.h"
+
+#include <iostream>		// For console output
+#include <fstream>		// For logging to file (measurements.txt)
+
 using namespace std;
 
-bool HockeyGame::setUpConnections(){//upprättar anslutning AI-moduler
-	if(homeTeamConnection==NULL||awayTeamConnection==NULL){
-		listeningSocket = new UDPSocket(PORT);//objekt för udp-kommunikation
+bool running = false;
+bool paused = false;
 
-		Connection homeSource=Connection();//objekt som innehåller information om anslutningar, se TeamConnection.cpp
-		Connection awaySource=Connection();
-		char* buf[BUFLENGTH];//skapar en buffert i minnet att lägga motagna meddelanden
+void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) {
+	const int MESSAGELENGTH=29;
+	int homeMessage[MESSAGELENGTH];
+	int awayMessage[MESSAGELENGTH];
 
-		int handshake[]={1};//skapar ett handskaknings meddelande
+	TeamConnection *pHomeTeamConnection = getHomeTeamConnection();
+	TeamConnection *pAwayTeamConnection = getAwayTeamConnection();
 
-		cout<<"waiting at homeplayer"<<endl;
+	Team *pHomeTeam = getHomeTeam();
+	Team *pAwayTeam = getAwayTeam();
 
-		listeningSocket->recvFrom(buf,BUFLENGTH,homeSource.adress,homeSource.port);//Väntar på handskakning från AI-modul
-		homeTeamConnection = new TeamConnection(homeSource, "Home team");//Sparar AImodulens plats
-		homeTeamConnection->send(handshake,1);//Skickar hanskakning
-
-		cout<<"home aquired at port "<<homeSource.port<<endl;
-		cout<<"waiting at awayplayer"<<endl;
-
-		handshake[0]=2;//ny hanskakning för andra laget
+	PuckPosition puck = getPuckPosition();
 	
-		listeningSocket->recvFrom(buf,BUFLENGTH,awaySource.adress,awaySource.port);
-		awayTeamConnection = new TeamConnection(awaySource, "Away team");
-		awayTeamConnection->send(handshake,4);
-		cout<<"away aquired at port "<<awaySource.port<<endl;
-		if(homeTeamConnection->fromSource(awaySource)){//kollar att int samma AI har anslutit igen, om så ge fel
-			cout<<"team already aquired, next team must be on another port"<<endl;
-			return false;
+	int gametime = getGametime();
+
+	// Update teams
+	getHomeTeam()->update(homeStatus);
+	getAwayTeam()->update(awayStatus);
+
+	// Send new state to AI
+	if ((pHomeTeamConnection != NULL) && 
+		(pAwayTeamConnection != NULL)) {
+		int index=0;
+		awayMessage[index]   = pAwayTeam->getGoals();
+		homeMessage[index++] = pHomeTeam->getGoals();
+
+		awayMessage[index]   = pHomeTeam->getGoals();
+		homeMessage[index++] = pAwayTeam->getGoals();
+
+		awayMessage[index]   = puck.x;
+		homeMessage[index++] = puck.x;
+
+		awayMessage[index]   = puck.y;
+		homeMessage[index++] = puck.y;
+
+		awayMessage[index]   = gametime;
+		homeMessage[index++] = gametime;
+
+		for(int i = 0; i < 12; i++) {
+			awayMessage[index]   = (awayStatus[i] & 0xff);
+			homeMessage[index++] = (homeStatus[i] & 0xff);
 		}
-		recieverThreadHandle=(HANDLE)_beginthreadex(NULL,0,recieverThread,(void*)listeningSocket,CREATE_SUSPENDED,NULL);//startar tråden pausad, se teamConnections.cpp
-		clientsAliveThreadHandle = (HANDLE)_beginthreadex(NULL, 0, checkClientsProc, (void *)this, CREATE_SUSPENDED, NULL);
+
+		for(int i=0;i<12;i++){
+			awayMessage[index]   = (homeStatus[i] & 0xff);
+			homeMessage[index++] = (awayStatus[i] & 0xff);
+		}
+
+		pHomeTeamConnection->send(awayMessage, MESSAGELENGTH);
+		pAwayTeamConnection->send(homeMessage, MESSAGELENGTH);
 	}
-	return true;
+
+// DEBUG log measurements
+#ifdef DEBUG
+	static ofstream measurementsLog = ofstream();
+	static bool measurementsLogInitialized = false;
+	if (!measurementsLogInitialized) {
+		measurementsLog.open("measurements.txt");
+		measurementsLogInitialized = true;
+	}
+
+	measurementsLog << gametime << "\t";
+
+	for (int i = 0; i < 12; i++) 
+		measurementsLog << (int)homeStatus[i] << "\t";	
+
+	for (int i=0;i<12;i++)
+		measurementsLog << (int)awayStatus[i] << "\t";	
+
+	measurementsLog << endl;
+#endif
 }
-bool HockeyGame::setUpGamestate(){
-	if(!initializeMicroControllers()){
+
+bool hockeygame::initialize() {
+	cout << "Initializing camera and micro controllers, please be patient..." << endl;
+
+	if (!initPlayerPositions()) {
+		cout << "Failed reading player positions!" << endl;
+		return false;
+	}
+	else if (!initializeMicroControllers(microControllersRead)) {
+		cout << "Failed to initialize micro controllers!";
+		return false;
+	}
+	else if (!initializeTracking()) {
+		cout << "Failed to initialize camera!";
+		startTrackingPuck();
 		return false;
 	}
 
-	senderThreadHandle=(HANDLE)_beginthreadex(NULL,0,senderThread,NULL,CREATE_SUSPENDED,NULL);//skapar tråden pausad
-	
-	return true;
-}
-bool HockeyGame::setUpCamera(){
-	if(!initializeTracking()){ //startar bildhantering, se gamestate.cpp, definierar track_puck
-		return false;
-	}
-	cameraThreadHandle=(HANDLE)_beginthreadex(NULL,0,cameraThread,NULL,CREATE_SUSPENDED,NULL);//skapar kameratråden pausad
+	startDrawing();
+
+	cout << endl;
 	return true;
 }
 
-bool HockeyGame::initPlayerPositions() {
-	for (int i = 0; i < 2; i++) {
-		Team *pTeam = teamFromId(i);
-		for (int j = 0; j < 6; j++) {
-			char fileName[20];
-			sprintf(fileName, "player%d%d.txt", i, j);
-			if (!pTeam->getPlayer(j)->readLocations(fileName))
-				return false;
-		}
-	}
-	return true;
-}
-
-bool HockeyGame::initializeGame(){
-	//creates the gamethreads suspended
-	if(!running){
+bool hockeygame::startGame() {
+	if (!running) {
 		running=true;
-		if (!initPlayerPositions()) {
-			running = false;
-			cout << "Failed reading player positions" << endl;
-			return running;
-		}
-		if(!setUpCamera()){//avbryter starten om inte kameran kan startas
-			running= false;
-			return running;
-		}
-		if(!setUpGamestate()){
-			running= false;
-			return running;
-		}
-		if(!setUpConnections()){
+		if (!setUpConnections(stopGame, sendCommandsToHomeMicroController, sendCommandsToAwayMicroController)) {
 			running= false;
 			return running;
 		}
 		paused=true;
 		
-		cout<<"successfully initialized game: starting gamethreads"<<endl;
+		cout << "successfully started game" << endl;
 		startGametime();//definieras i Gametime.cpp
 		//starts the threads
 		resumeGame();
 		
-	}else{
-		cout<<"can't initialize: game already running"<<endl;
 	}
+	else cout << "can't start: game already running" << endl;
 	return running;
 }
 
-void safeTerminateThread(HANDLE threadHandle) {
-	if (threadHandle != NULL)
-		TerminateThread(threadHandle, 0);
-}
-
-void HockeyGame::stopGame(){//avslutar spelet
-	if(running){
-		safeTerminateThread(senderThreadHandle);
-		safeTerminateThread(recieverThreadHandle);
-		safeTerminateThread(cameraThreadHandle);
-
-		// TODO: Make/find delete and null-function
-		if (homeTeamConnection != NULL) {
-			delete homeTeamConnection;
-			homeTeamConnection = NULL;
-		}
-		if (awayTeamConnection != NULL) {
-			delete awayTeamConnection;
-			awayTeamConnection = NULL;
-		}
-		if (listeningSocket != NULL) {
-			delete listeningSocket;
-			listeningSocket = NULL;
-		}
+void hockeygame::stopGame(){//avslutar spelet
+	if (running) {
+		stopListening();
 
 		running=false;
 		cout << "stopped" << endl;
-		
-		safeTerminateThread(clientsAliveThreadHandle);
-	}else{
-		cout<<"can't stop game: game isn't running"<<endl;
-	}
+	} 
+	else cout << "can't stop game: game isn't running" << endl;
 }
 
-void safeSuspendThread(HANDLE handle) {
-	if (handle != NULL)
-		SuspendThread(handle);
-}
-
-void HockeyGame::pauseGame(){//pausa spelet
-	if(running&&!paused){
+void hockeygame::pauseGame(){ //pausa spelet
+	if (running && !paused) {
 		paused=true;
 		pauseGametime();
+		pauseListening();
 
-		safeSuspendThread(senderThreadHandle);
-		safeSuspendThread(recieverThreadHandle);
-		safeSuspendThread(cameraThreadHandle);
-		safeSuspendThread(clientsAliveThreadHandle);
+		// TODO: Unregister sending
 
 		cout << "paused" << endl;
-	}else{
-		cout<<"can't pause game"<<endl;
 	}
+	else cout << "can't pause game" << endl;
 }
 
-void safeResumeThread(HANDLE handle) {
-	if (handle != NULL)
-		ResumeThread(handle);
-}
-
-void HockeyGame::resumeGame(){
+void hockeygame::resumeGame(){
 	if(running&&paused){
 		paused=false;
 		resumeGametime();
+		resumeListening();
 
-		safeResumeThread(senderThreadHandle);
-		safeResumeThread(recieverThreadHandle);
-		safeResumeThread(cameraThreadHandle);
-		safeResumeThread(clientsAliveThreadHandle);
+		// TODO: Reregister for sending
 
 		cout << "resumed" << endl;
 	}else{
 		cout<<"can't resume game"<<endl;
 	}
+}
+
+void hockeygame::calibrateCamera() {
+	stopTrackingPuck();
+	::calibrateCamera();	// startar bildkalibrerings program
+	startTrackingPuck();
+}
+
+void hockeygame::calibrateMicroControllers() {
+	::calibrateMicroControllers();
 }

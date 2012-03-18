@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Helpers">
+      <UniqueIdentifier>{092a74da-3f99-465d-81c6-7dfcf85dd9a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Hockey">
+      <UniqueIdentifier>{e59836e6-3041-4c24-8773-0acaaaff3e20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Helpers">
+      <UniqueIdentifier>{3de0fa42-3ac0-417f-9d66-651cc4f520a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Hockey">
+      <UniqueIdentifier>{b16f2f89-e4a2-4748-aab2-aadd8e34cea1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HockeyManager.cpp">
@@ -21,47 +33,47 @@
     <ClCompile Include="HockeyGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameState.cpp">
+    <ClCompile Include="GUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TeamConnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectTracker.cpp">
+    <ClCompile Include="CameraCalibration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CamCapture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerFunctions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SerialConnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CalibrationMode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Gametime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="micCal.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="PracticalSocket.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Helpers</Filter>
     </ClCompile>
     <ClCompile Include="SerialClass.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialConnection.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectTracker.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Gametime.cpp">
+      <Filter>Source Files\Hockey</Filter>
     </ClCompile>
     <ClCompile Include="Limits.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Hockey</Filter>
     </ClCompile>
     <ClCompile Include="Player.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Hockey</Filter>
+    </ClCompile>
+    <ClCompile Include="Puck.cpp">
+      <Filter>Source Files\Hockey</Filter>
     </ClCompile>
     <ClCompile Include="Team.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Hockey</Filter>
+    </ClCompile>
+    <ClCompile Include="TeamConnection.cpp">
+      <Filter>Source Files\Hockey</Filter>
+    </ClCompile>
+    <ClCompile Include="MicroControllers.cpp">
+      <Filter>Source Files\Hockey</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -71,47 +83,47 @@
     <ClInclude Include="HockeyGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CamCapture.h">
+    <ClInclude Include="GUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameState.h">
+    <ClInclude Include="CameraCalibration.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CamCapture.h">
+      <Filter>Header Files\Helpers</Filter>
     </ClInclude>
     <ClInclude Include="ObjectTracker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TeamConnection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SerialConnection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CalibrationMode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Gametime.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="calibrateMicroController.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Helpers</Filter>
     </ClInclude>
     <ClInclude Include="PracticalSocket.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Helpers</Filter>
     </ClInclude>
     <ClInclude Include="SerialClass.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialConnection.h">
+      <Filter>Header Files\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Gametime.h">
+      <Filter>Header Files\Hockey</Filter>
     </ClInclude>
     <ClInclude Include="Limits.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Team.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Hockey</Filter>
     </ClInclude>
     <ClInclude Include="Player.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Hockey</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
+    <ClInclude Include="Puck.h">
+      <Filter>Header Files\Hockey</Filter>
+    </ClInclude>
+    <ClInclude Include="Team.h">
+      <Filter>Header Files\Hockey</Filter>
+    </ClInclude>
+    <ClInclude Include="TeamConnection.h">
+      <Filter>Header Files\Hockey</Filter>
+    </ClInclude>
+    <ClInclude Include="MicroControllers.h">
+      <Filter>Header Files\Hockey</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

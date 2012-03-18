@@ -48,6 +48,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\OpenCV2.2\include\opencv;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include;D:\OpenCV2.2\include;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\include;D:\OpenCV2.2\include\opencv;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\OpenCV2.2\include;D:\CommonSource\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\include;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\Common;D:\Program Files (x86)\The Imaging Source Europe GmbH\IC Imaging Control 3.2\samples\vc10\Common;C:\Users\Emil\Documents\Hockey 2012\include\OpenCV2.2\include;C:\Users\Emil\Documents\Hockey 2012\include\OpenCV2.2\include\opencv;C:\Users\Emil\Documents\Hockey 2012\include\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\include;C:\Users\Emil\Documents\Hockey 2012\include\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);DEBUG</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -69,32 +70,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Limits.cpp" />
+    <ClCompile Include="MicroControllers.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PracticalSocket.cpp" />
+    <ClCompile Include="Puck.cpp" />
     <ClCompile Include="SerialClass.cpp" />
-    <ClCompile Include="CalibrationMode.cpp" />
+    <ClCompile Include="CameraCalibration.cpp" />
     <ClCompile Include="CamCapture.cpp" />
-    <ClCompile Include="GameState.cpp" />
     <ClCompile Include="Gametime.cpp" />
     <ClCompile Include="HockeyGame.cpp" />
     <ClCompile Include="HockeyManager.cpp" />
-    <ClCompile Include="micCal.cpp" />
     <ClCompile Include="ObjectTracker.cpp" />
-    <ClCompile Include="PlayerFunctions.cpp" />
     <ClCompile Include="SerialConnection.cpp" />
     <ClCompile Include="Team.cpp" />
     <ClCompile Include="TeamConnection.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GUI.h" />
     <ClInclude Include="Limits.h" />
+    <ClInclude Include="MicroControllers.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PracticalSocket.h" />
+    <ClInclude Include="Puck.h" />
     <ClInclude Include="SerialClass.h" />
-    <ClInclude Include="calibrateMicroController.h" />
-    <ClInclude Include="CalibrationMode.h" />
+    <ClInclude Include="CameraCalibration.h" />
     <ClInclude Include="CamCapture.h" />
-    <ClInclude Include="GameState.h" />
     <ClInclude Include="Gametime.h" />
     <ClInclude Include="HockeyGame.h" />
     <ClInclude Include="HockeyManager.h" />
@@ -102,9 +104,6 @@
     <ClInclude Include="SerialConnection.h" />
     <ClInclude Include="Team.h" />
     <ClInclude Include="TeamConnection.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

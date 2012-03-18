@@ -1,19 +1,14 @@
-#include <process.h>
-#include <Windows.h>
-class HockeyGame{//klass för hanterandet av flödet i spelet
-	HANDLE senderThreadHandle;
-	HANDLE recieverThreadHandle;
-	HANDLE clientsAliveThreadHandle;
-	HANDLE cameraThreadHandle;
-public:
-	bool initializeGame();
+#ifndef __HOCKEYGAME_H__
+#define __HOCKEYGAME_H__
+
+namespace hockeygame {
+	bool initialize();
+	bool startGame();
 	void stopGame();
 	void pauseGame();
 	void resumeGame();
-private:
-	bool initPlayerPositions();
-	bool setUpConnections();
-	bool setUpGamestate();
-	bool setUpCamera();	
-	
-};
+	void calibrateCamera();
+	void calibrateMicroControllers();
+}
+
+#endif //__HOCKEYGAME_H__

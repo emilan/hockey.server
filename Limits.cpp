@@ -1,5 +1,6 @@
 #include "Limits.h"
-#include "GameState.h"
+#include "Team.h"
+
 #include <vector>
 
 #define MAX_TRANSLATION_DIFF	5
@@ -7,13 +8,16 @@
 
 using namespace std;
 
-typedef struct {
-	unsigned char teamId;
-	unsigned char playerId;
-	unsigned char destinationTranslation;
-} ApprovedCommand;
+namespace limitsns {
+	typedef struct {
+		unsigned char teamId;
+		unsigned char playerId;
+		unsigned char destinationTranslation;
+	} ApprovedCommand;
 
-vector<ApprovedCommand> approvedCommands = vector<ApprovedCommand>();
+	vector<ApprovedCommand> approvedCommands = vector<ApprovedCommand>();
+}
+using namespace limitsns;
 
 void removePlayerCommands(int teamId, int playerId) {
 	// TODO: Some kind of bug here? Reproduce!
@@ -33,7 +37,7 @@ bool isCommandOkayMaxInMovement(int teamId, char *cmd) {
 
 	// Step 1: Remove finished commands
 	for (vector<ApprovedCommand>::iterator it = approvedCommands.begin(); it != approvedCommands.end(); ) {
-		Team *pTeam = teamFromId(it->teamId);
+		Team *pTeam = getTeamById(it->teamId);
 		Player *pPlayer = pTeam->getPlayer(it->playerId);
 		unsigned char trans = pPlayer->getTrans();
 

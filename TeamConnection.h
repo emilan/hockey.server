@@ -2,15 +2,18 @@
 #include <string> 
 #define BUFLENGTH 255
 #define PORT 60040
-#ifndef CONNECTION
-#define CONNECTION
-struct Connection{//struct för att hålla reda på anslutnng
+
+#ifndef __TEAM_CONNECTION_H__
+#define __TEAM_CONNECTION_H__
+
+struct Connection { //struct för att hålla reda på anslutnng
 	std::string adress;
 	unsigned short port;
 	bool operator==(Connection b);
 	Connection(){adress="";port=0;};
 };
-class TeamConnection{// klass för att sköta kommunikation med AI-modul
+
+class TeamConnection { // klass för att sköta kommunikation med AI-modul
 	Connection connection;
 	UDPSocket* socket;
 	int lastAlive;
@@ -18,7 +21,7 @@ class TeamConnection{// klass för att sköta kommunikation med AI-modul
 public:
 	void send(int* buf,const int bufLength);
 	void sendBytes(char *buf, const int bufLength);
-	bool fromSource(Connection source);
+	bool isFromSource(Connection source);
 	void command(int com[BUFLENGTH],int length);
 	void reportAlive();
 	bool isAlive();
@@ -26,12 +29,16 @@ public:
 	TeamConnection(Connection source, char *name);
 	~TeamConnection();
 };
-extern TeamConnection* homeTeamConnection;
-extern TeamConnection* awayTeamConnection;
 
-extern UDPSocket *listeningSocket;
+TeamConnection* getHomeTeamConnection();
+TeamConnection* getAwayTeamConnection();
 
-unsigned __stdcall recieverThread(void* param);
-unsigned __stdcall checkClientsProc(void *param);
+bool setUpConnections(void(*stopFunction)(void), 
+	void(*homeCmdsReceived)(char *msg, int length), 
+	void(*awayCmdsReceived)(char *msg, int length));
+void startListening();
+void pauseListening();
+void stopListening();
+void resumeListening();
 
-#endif
+#endif //__TEAM_CONNECTION_H__
