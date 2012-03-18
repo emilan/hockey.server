@@ -11,7 +11,7 @@
 #include <cmath>
 
 using namespace std; 
-#define PI 3.14159256
+#define PI 3.14159265
 
 //The class that tracks a specific object on the board.
 class ObjectTracker {
