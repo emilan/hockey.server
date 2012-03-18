@@ -22,6 +22,10 @@ PlayerLocation Player::getCurrentLocation() {
 	return getLocation(this->trans);
 }
 
+unsigned char Player::getCurrentRotation() {
+	return this->rot;
+}
+
 bool Player::readLocations(char *fileName) {
 	vector<PlayerLocation> points;
 	FILE *pFile = fopen(fileName, "r");

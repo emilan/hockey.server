@@ -19,6 +19,7 @@ public:
 	void update(unsigned char trans, unsigned char rot);
 	unsigned char getTrans();
 	PlayerLocation getCurrentLocation();
+	unsigned char getCurrentRotation();
 	PlayerLocation getLocation(int trans);
 	bool readLocations(char *fileName);
 };
