@@ -32,9 +32,9 @@ bool Player::readLocations(char *fileName) {
 	if (pFile == NULL)
 		return false;
 
-	int x, y;
+	float x, y;
 
-	while (fscanf(pFile, "%d %d", &x, &y) != EOF) {
+	while (fscanf(pFile, "%f %f", &x, &y) != EOF) {
 		PlayerLocation loc = { x, y };
 		points.push_back(loc);
 	}

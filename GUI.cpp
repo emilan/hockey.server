@@ -7,7 +7,7 @@
 
 #include <process.h>
 
-#define WIDTH	880
+#define WIDTH	849
 #define HEIGHT	460
 #define PI 3.14159265
 
@@ -36,7 +36,7 @@ void draw() {
 			Player * pPlayer = pTeam->getPlayer(j);
 			PlayerLocation loc = pPlayer->getCurrentLocation();
 			float rot = - pPlayer->getCurrentRotation() / 255.0f * 2 * PI + PI / 2;	// vridning medsols axel -> vridning motsols spelare
-			CvPoint playerCenter = cvPoint(WIDTH / 2 - loc.x, HEIGHT / 2 + loc.y);
+			CvPoint playerCenter = cvPoint(WIDTH / 2 + loc.x, HEIGHT / 2 + loc.y);
 			
 			int playerClubLength = 41;
 			CvPoint playerClub = 
@@ -75,7 +75,8 @@ void startDrawing() {
 			Player * pPlayer = pTeam->getPlayer(j);
 			for (int k = 0; k < 256; k++) {
 				PlayerLocation loc = pPlayer->getLocation(k);
-				cvCircle(pImgBg, cvPoint(WIDTH / 2 - loc.x, HEIGHT / 2 + loc.y), 2, cvScalar(128, 128, 128, 255), CV_FILLED);
+				int shade = 32 + 7 * k / 8;
+				cvCircle(pImgBg, cvPoint(WIDTH / 2 + loc.x, HEIGHT / 2 + loc.y), 2, cvScalar(shade, shade, shade, 255), CV_FILLED);
 			}
 		}
 	}
