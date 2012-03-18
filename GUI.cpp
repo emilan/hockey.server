@@ -7,8 +7,8 @@
 
 #include <process.h>
 
-#define WIDTH	800
-#define HEIGHT	400
+#define WIDTH	880
+#define HEIGHT	460
 #define PI 3.14159265
 
 IplImage *pImgBg;
@@ -55,7 +55,7 @@ void draw() {
 	char buf[20];
 	sprintf_s(buf, "FPS: %f", fps);
 	cvPutText(pImg, buf, cvPoint(0, 20), &cvFont(1), cvScalar(255, 255, 255, 255));
-	cvShowImage("test", pImg);
+	cvShowImage("Hockey Server Visualisation", pImg);
 	cvWaitKey(1);
 }
 
