@@ -42,9 +42,15 @@ bool initPlayerPositions() {
 	for (int i = 0; i < 2; i++) {
 		Team *pTeam = getTeamById(i);
 		for (int j = 0; j < 6; j++) {
+			Player *pPlayer = pTeam->getPlayer(j);
+
 			char fileName[20];
-			sprintf(fileName, "player%d%d.txt", i, j);
-			if (!pTeam->getPlayer(j)->readLocations(fileName))
+			sprintf_s(fileName, "player%d%d.txt", i, j);
+			if (!pPlayer->readLocations(fileName))
+				return false;
+
+			sprintf_s(fileName, "player%d%d.png", i, j);
+			if (!pPlayer->loadArea(fileName))
 				return false;
 		}
 	}

@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <vector>
+#include <cv.h>
+#include <highgui.h>
 
 using namespace std;
 
@@ -70,6 +72,20 @@ bool Player::readLocations(char *fileName) {
 	delete[] lengths;
 
 	return true;
+}
+
+bool Player::loadArea(char *filename) {
+	this->pImgArea = cvLoadImage(filename, CV_LOAD_IMAGE_GRAYSCALE);
+	return pImgArea != NULL;
+}
+
+bool Player::canAccessCoordinate(int x, int y) {
+	CvSize sz = cvGetSize(pImgArea);
+	if (x > sz.width - 1 || y > sz.height - 1 || x < 0 || y < 0)
+		return false;
+
+	CvScalar s = cvGet2D(pImgArea, y, x);
+	return s.val[0] != 0;
 }
 
 PlayerLocation PlayerLocation::subtract(PlayerLocation loc) {

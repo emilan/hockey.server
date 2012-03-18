@@ -24,16 +24,21 @@ void draw() {
 		tOld = tNew;
 		counter = 0;
 	}
+	cvCopy(pImgBg, pImg, NULL);
+
+	PuckPosition puck = getPuckPosition();
+	CvScalar puckColor = cvScalar(0, 255, 0, 255);
+	cvCircle(pImg, cvPoint(WIDTH / 2 + puck.x, HEIGHT / 2 + puck.y), 11, puckColor);
+
 	CvScalar colorFinland = cvScalar(255, 255, 255, 255);
 	CvScalar colorSweden = cvScalar(0, 255, 255, 255);
-	cvCopy(pImgBg, pImg, NULL);
 	for (int i = 0; i < 2; i++) {
 		Team *pTeam = getTeamById(i);
-		CvScalar playerColor = i == 0 ? colorSweden : colorFinland;
+		CvScalar teamColor = i == 0 ? colorSweden : colorFinland;
 		CvPoint playerFaces = i == 0 ? cvPoint(1, -1) : cvPoint(-1, 1);	// TODO: Examine how players club rotates with his location
 
 		for (int j = 0; j < 6; j++) {
-			Player * pPlayer = pTeam->getPlayer(j);
+			Player *pPlayer = pTeam->getPlayer(j);
 			PlayerLocation loc = pPlayer->getCurrentLocation();
 			float rot = - pPlayer->getCurrentRotation() / 255.0f * 2 * PI + PI / 2;	// vridning medsols axel -> vridning motsols spelare
 			CvPoint playerCenter = cvPoint(WIDTH / 2 + loc.x, HEIGHT / 2 + loc.y);
@@ -43,14 +48,12 @@ void draw() {
 				cvPoint(playerCenter.x + playerFaces.x * playerClubLength * cos (rot), 
 						playerCenter.y + playerFaces.y * playerClubLength * sin (rot));
 
+			CvScalar playerColor = pPlayer->canAccessCoordinate(WIDTH / 2 + puck.x, HEIGHT / 2 + puck.y) ? cvScalar(0, 0, 255, 255) : teamColor;
+
 			cvCircle(pImg, playerCenter, 15, playerColor, 3);
 			cvLine(pImg, playerCenter, playerClub, playerColor, 3);
 		}
 	}
-
-	PuckPosition pos = getPuckPosition();
-	CvScalar puckColor = cvScalar(0, 255, 0, 255);
-	cvCircle(pImg, cvPoint(WIDTH / 2 + pos.x, HEIGHT / 2 + pos.y), 11, puckColor);
 
 	char buf[20];
 	sprintf_s(buf, "FPS: %f", fps);
@@ -68,11 +71,9 @@ unsigned __stdcall drawingThread(void* param){
 void startDrawing() {
 	pImg = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);
 	pImgBg = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);
-	IplImage *pImgAreas = cvLoadImage("areas.png", CV_LOAD_IMAGE_UNCHANGED);
+	//IplImage *pImgAreas = cvLoadImage("areas.png", CV_LOAD_IMAGE_UNCHANGED);
 	cvRectangle(pImgBg, cvPoint(0, 0), cvPoint(WIDTH, HEIGHT), cvScalar(0, 0, 0, 0), CV_FILLED);
-	CvSize size1 = cvGetSize(pImgAreas);
-	CvSize size2 = cvGetSize(pImgBg);
-	cvAdd(pImgAreas, pImgBg, pImgBg, 0);
+	//cvAdd(pImgAreas, pImgBg, pImgBg, 0);
 	for (int i = 0; i < 2; i++) {
 		Team *pTeam = getTeamById(i);
 		for (int j = 0; j < 6; j++) {
