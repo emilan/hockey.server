@@ -62,11 +62,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\OpenCV2.2\include\opencv;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include;D:\OpenCV2.2\include;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\include;D:\OpenCV2.2\include\opencv;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\OpenCV2.2\include;D:\CommonSource\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\include;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\Common;D:\Program Files (x86)\The Imaging Source Europe GmbH\IC Imaging Control 3.2\samples\vc10\Common;C:\Users\Emil\Documents\Hockey 2012\include\OpenCV2.2\include;C:\Users\Emil\Documents\Hockey 2012\include\OpenCV2.2\include\opencv;C:\Users\Emil\Documents\Hockey 2012\include\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\include;C:\Users\Emil\Documents\Hockey 2012\include\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\win32\release;C:\Users\Bear\Documents\Visual Studio 2010\Projects\include\OpenCV2.2\lib;D:\CommonSource\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\win32\release;D:\CommonSource\OpenCV2.2\lib;C:\Users\Emil\Documents\Hockey 2012\include\The Imaging Source Europe GmbH\IC Imaging Control 3.2\classlib\win32\release;C:\Users\Emil\Documents\Hockey 2012\include\OpenCV2.2\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>wsock32.lib;opencv_core220.lib;opencv_highgui220.lib;opencv_imgproc220.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
