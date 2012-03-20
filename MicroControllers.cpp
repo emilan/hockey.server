@@ -2,6 +2,7 @@
 #include "SerialConnection.h"
 
 #include <iostream>		// For console output
+#include <ctime>
 
 using namespace std;
 
@@ -9,6 +10,7 @@ namespace microcontrollersns {
 	SerialConnection *homeSerial;
 	SerialConnection *awaySerial;
 	HANDLE senderThreadHandle;
+	float microControllerFps = 0;
 }
 using namespace microcontrollersns;
 
@@ -20,6 +22,14 @@ unsigned __stdcall microControllerReadThread(void* param) {
 	unsigned char awayStatus[100];
 	
 	while (true) { // reads from serial connections and updates team status
+		static clock_t tOld = 0;
+		static unsigned char counter = 0;
+		if (++counter == 20) {
+			clock_t tNew = clock();
+			microControllerFps = 20.0f / (1.0f * (tNew - tOld) / CLOCKS_PER_SEC);
+			tOld = tNew;
+			counter = 0;
+		}
 		Sleep(10);
 
 		homeSerial->read((char *)homeStatus);
@@ -66,4 +76,8 @@ void sendCommandsToHomeMicroController(char *msg, int length) {
 
 void sendCommandsToAwayMicroController(char *msg, int length) {
 	awaySerial->write(msg, length);
+}
+
+float getMicroControllerFrequency() {
+	return microControllerFps;
 }

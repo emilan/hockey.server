@@ -83,27 +83,31 @@ namespace puckns {
 	bool trackingInitialized = false;
 	volatile bool trackingPuck = false;
 	HANDLE cameraThreadHandle;
+
+	float cameraFrequency;
 }
 using namespace puckns;
 
 unsigned __stdcall cameraThread(void* param) {
 	CvPoint2D32f* puckPoint = new CvPoint2D32f();
 	IplImage* frame = cvCreateImage(IMAGESIZE, 8, 3);//skapar en buffer för en bild
-	int t0 = 0, t1 = 0, t2 = 0, t3 = 0; //DEBUGVERKTYG
 
 	while (trackingPuck) {
-		t0 = clock();
+		static clock_t tOld = 0;
+		static unsigned char counter = 0;
+		if (++counter == 20) {
+			clock_t tNew = clock();
+			cameraFrequency = 20.0f / (1.0f * (tNew - tOld) / CLOCKS_PER_SEC);
+			tOld = tNew;
+			counter = 0;
+		}
+
 		//fyller buffren med en ny bild
 		capture->myQueryFrame(frame); //40ms
-		t1 = clock();
 		//hanterar bilden
 		track_puck.trackObject(frame, puckPoint);//20ms
-		t2 = clock();
 		//uppdaterar puckens position med ny data
 		puck.updatePosition(puckPoint);
-		t3 = clock();
-		//float cycle=(GetTickCount()-t);
-		//cout<<t0-t1<<"\t"<<t1-t2<<"\t"<<t3-t2<<endl;
 	}
 	return NULL;
 }
@@ -169,4 +173,8 @@ ObjectTracker *getPuckTracker() {
 
 CamCapture *getCamCapture() {
 	return capture;
+}
+
+float getCameraFrequency() {
+	return cameraFrequency;
 }

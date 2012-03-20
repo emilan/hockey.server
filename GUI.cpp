@@ -6,6 +6,8 @@
 #include "highgui.h"
 #include "Limits.h"
 
+#include "MicroControllers.h"
+
 #include <process.h>
 
 #define WIDTH	849
@@ -31,7 +33,7 @@ void draw() {
 	
 	CvScalar puckColor = cvScalar(0, 255, 0, 255);
 
-	PuckPosition hist[100];
+	PuckPosition hist[200];
 	int historyLength = getPuckHistory(hist, 100);
 	for (int i = 0; i < historyLength; i++)
 		cvCircle(pImg, cvPoint(WIDTH / 2 + hist[i].x, HEIGHT / 2 + hist[i].y), 11, cvScalar(0, 255 * i / 100, 0, 255));
@@ -65,11 +67,14 @@ void draw() {
 	}
 
 	char buf[20];
-	sprintf_s(buf, "FPS: %f", fps);
-	cvPutText(pImg, buf, cvPoint(0, 20), &cvFont(1), cvScalar(255, 255, 255, 255));
+	sprintf_s(buf, "GUI: %.2f Hz", fps);
+	cvPutText(pImg, buf, cvPoint(0, 15), &cvFont(1), cvScalar(255, 255, 255, 255));
 
-	if (!constructive) 
-		cvPutText(pImg, "DESTRUCTIVE!", cvPoint(0, 40), &cvFont(1), cvScalar(0, 0, 255, 255));
+	sprintf_s(buf, "MC: %.2f Hz", getMicroControllerFrequency());
+	cvPutText(pImg, buf, cvPoint(0, 30), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+	sprintf_s(buf, "Cam: %.2f Hz", getCameraFrequency());
+	cvPutText(pImg, buf, cvPoint(0, 45), &cvFont(1), cvScalar(255, 255, 255, 255));
 
 	cvShowImage("Hockey Server Visualisation", pImg);
 	cvWaitKey(1);

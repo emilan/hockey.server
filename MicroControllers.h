@@ -7,4 +7,6 @@ void calibrateMicroControllers();
 void sendCommandsToHomeMicroController(char *msg, int length);
 void sendCommandsToAwayMicroController(char *msg, int length);
 
+float getMicroControllerFrequency();
+
 #endif //__MICROCONTROLLERS_H__
