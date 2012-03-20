@@ -97,14 +97,18 @@ bool checkConstructive() {
 		}
 	}
 
-	// The question is how to handle the area where only the guard and backs from the same team can be
-	// Currently, define as OK if both teams can access the puck
 	bool res;
-	if (tmpPlayers[0] == 0 && tmpPlayers[1] == 0)
-		res = true;
-	else if (tmpPlayers[0] == 0 || tmpPlayers[1] == 0) {
-		// New player
-		if (players[0] == tmpPlayers[0] && players[1] == tmpPlayers[1])
+
+	if (tmpPlayers[0] != 0 && tmpPlayers[1] == 0) {
+		if (players[0] != 0 && players[1] == 0)
+			res = getGametime() - constructiveTime < 5000;
+		else {
+			constructiveTime = getGametime();
+			res = true;
+		}
+	}
+	else if (tmpPlayers[1] != 0 && tmpPlayers[0] == 0) {
+		if (players[1] != 0 && players[0] == 0)
 			res = getGametime() - constructiveTime < 5000;
 		else {
 			constructiveTime = getGametime();
@@ -112,6 +116,7 @@ bool checkConstructive() {
 		}
 	}
 	else res = true;
+	
 
 	players[0] = tmpPlayers[0];
 	players[1] = tmpPlayers[1];
