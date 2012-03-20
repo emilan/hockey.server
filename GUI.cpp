@@ -28,8 +28,13 @@ void draw() {
 	cvCopy(pImgBg, pImg, NULL);
 
 	PuckPosition puck = getPuckPosition();
+	
 	CvScalar puckColor = cvScalar(0, 255, 0, 255);
-	cvCircle(pImg, cvPoint(WIDTH / 2 + puck.x, HEIGHT / 2 + puck.y), 11, puckColor);
+
+	PuckPosition hist[100];
+	int historyLength = getPuckHistory(hist, 100);
+	for (int i = 0; i < historyLength; i++)
+		cvCircle(pImg, cvPoint(WIDTH / 2 + hist[i].x, HEIGHT / 2 + hist[i].y), 11, cvScalar(0, 255 * i / 100, 0, 255));
 
 	CvScalar colorFinland = cvScalar(255, 255, 255, 255);
 	CvScalar colorSweden = cvScalar(0, 255, 255, 255);

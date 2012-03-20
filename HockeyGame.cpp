@@ -95,12 +95,12 @@ bool hockeygame::initialize() {
 		cout << "Failed reading player positions!" << endl;
 		return false;
 	}
-	else if (!initializeMicroControllers(microControllersRead)) {
-		cout << "Failed to initialize micro controllers!";
-		return false;
-	}
 	else if (!initializeTracking()) {
 		cout << "Failed to initialize camera!";
+		return false;
+	}
+	else if (!initializeMicroControllers(microControllersRead)) {
+		cout << "Failed to initialize micro controllers!";
 		return false;
 	}
 

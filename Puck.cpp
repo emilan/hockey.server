@@ -6,22 +6,40 @@
 
 #include <process.h>
 
+#include <vector>
+
+using namespace std;
+
 // Class methods
-#define DISTANCETOGOAL 300
+#define DISTANCETOGOAL	300
+#define PUCKHISTORY		100
 
 struct Puck {
-	PuckPosition pos;
+	vector<PuckPosition> history;
+	HANDLE historyMutex;
+
 	CvPoint2D32f goal1;
 	CvPoint2D32f goal2;
 	Puck() {};
 	Puck(IplImage* frame);
 	
 	void updatePosition(CvPoint2D32f* point);
+	void addHistory(PuckPosition pos);
 };
 
+void Puck::addHistory(PuckPosition pos) {
+	WaitForSingleObject(historyMutex, INFINITE);
+	history.push_back(pos);
+	if (history.size() > PUCKHISTORY)
+		history.erase(history.begin());
+	ReleaseMutex(historyMutex);
+}
+
 Puck::Puck(IplImage* frame) {
-	pos.x = 0;
-	pos.y = 0;
+	historyMutex = CreateMutex(NULL, false, "readMutex");
+
+	PuckPosition pos = {0, 0};
+	addHistory(pos);
 	ObjectTracker track_goal1 = ObjectTracker(cvLoadImage("goal1.bmp", 0), "red");	//object som letar efter ena målet
 	ObjectTracker track_goal2 = ObjectTracker(cvLoadImage("goal2.bmp", 0), "red");	//object som letar efter andra målet
 		
@@ -34,6 +52,7 @@ Puck::Puck(IplImage* frame) {
 
 void Puck::updatePosition(CvPoint2D32f* ps){
 	//gör linjär transformation pixelkordinatrer -> millimeter med hjälp utav målens position
+	PuckPosition pos;
  	pos.x = ps->x - (goal1.x + goal2.x) / 2;
 	pos.y = ps->y - (goal1.y + goal2.y) / 2;
 
@@ -51,6 +70,8 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 	pos.y = v2x * pos.x + v2y * pos.y;
 	pos.x *= 2 * DISTANCETOGOAL / norm;
 	pos.y *= 2 * DISTANCETOGOAL / norm;
+
+	addHistory(pos);
 }
 
 // Instances, etc.
@@ -127,7 +148,19 @@ void stopTrackingPuck() {
 }
 
 PuckPosition getPuckPosition() {
-	return puck.pos;
+	WaitForSingleObject(puck.historyMutex, INFINITE);
+	PuckPosition pos = puck.history.back();
+	ReleaseMutex(puck.historyMutex);
+	return pos;
+}
+
+int getPuckHistory(PuckPosition *hist, unsigned int length) {
+	WaitForSingleObject(puck.historyMutex, INFINITE);
+	int c = min(puck.history.size(), length);
+	for (int i = 0; i < c; i++)
+		memcpy(hist + i, &puck.history[i], sizeof(PuckPosition)); 
+	ReleaseMutex(puck.historyMutex);
+	return c;
 }
 
 ObjectTracker *getPuckTracker() {

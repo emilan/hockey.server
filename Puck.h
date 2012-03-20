@@ -18,6 +18,7 @@ void stopTrackingPuck();
 ObjectTracker *getPuckTracker();
 CamCapture *getCamCapture();
 PuckPosition getPuckPosition();
+int getPuckHistory(PuckPosition *hist, unsigned int length);
 
 #define IMAGESIZE cvSize(744 / 2, 480 / 2)
 
