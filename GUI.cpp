@@ -4,6 +4,7 @@
 
 #include "cv.h"
 #include "highgui.h"
+#include "Limits.h"
 
 #include <process.h>
 
@@ -32,6 +33,8 @@ void draw() {
 
 	CvScalar colorFinland = cvScalar(255, 255, 255, 255);
 	CvScalar colorSweden = cvScalar(0, 255, 255, 255);
+
+	bool constructive = checkConstructive();
 	for (int i = 0; i < 2; i++) {
 		Team *pTeam = getTeamById(i);
 		CvScalar teamColor = i == 0 ? colorSweden : colorFinland;
@@ -48,7 +51,8 @@ void draw() {
 				cvPoint(playerCenter.x + playerFaces.x * playerClubLength * cos (rot), 
 						playerCenter.y + playerFaces.y * playerClubLength * sin (rot));
 
-			CvScalar playerColor = pPlayer->canAccessCoordinate(WIDTH / 2 + puck.x, HEIGHT / 2 + puck.y) ? cvScalar(0, 0, 255, 255) : teamColor;
+			CvScalar playerColor = pPlayer->canAccessCoordinate(WIDTH / 2 + puck.x, HEIGHT / 2 + puck.y) ? 
+				(constructive ? cvScalar(0, 255, 0) : cvScalar(0, 0, 255, 255)) : teamColor;
 
 			cvCircle(pImg, playerCenter, 15, playerColor, 3);
 			cvLine(pImg, playerCenter, playerClub, playerColor, 3);
@@ -58,6 +62,10 @@ void draw() {
 	char buf[20];
 	sprintf_s(buf, "FPS: %f", fps);
 	cvPutText(pImg, buf, cvPoint(0, 20), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+	if (!constructive) 
+		cvPutText(pImg, "DESTRUCTIVE!", cvPoint(0, 40), &cvFont(1), cvScalar(0, 0, 255, 255));
+
 	cvShowImage("Hockey Server Visualisation", pImg);
 	cvWaitKey(1);
 }

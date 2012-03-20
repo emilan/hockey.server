@@ -1,5 +1,7 @@
 #include "Limits.h"
 #include "Team.h"
+#include "Puck.h"
+#include "Gametime.h"
 
 #include <vector>
 
@@ -66,4 +68,53 @@ bool isCommandOkay(int teamId, char *cmd) {
 	if (!isCommandOkayMaxInMovement(teamId, cmd))
 		return false;
 	return true;
+}
+
+namespace limitsns {
+	unsigned char players[2] = {0, 0};
+	int constructiveTime = 0;
+}
+
+// From SBHF:
+// Efter det att pucken är möjlig att nå måste den tävlande snarast uträtta något konstruktivt,
+// dock senast inom 5 sekunder.
+bool checkConstructive() {
+// TODO: Rethink where coordinates are handled!
+#define WIDTH	849
+#define HEIGHT	460
+
+	PuckPosition puckPos = getPuckPosition();
+	puckPos.x = WIDTH / 2 + puckPos.x;
+	puckPos.y = HEIGHT / 2 + puckPos.y;
+	unsigned char tmpPlayers[2] = {0, 0};
+	
+	for (int t = 0; t < 2; t++) {
+		Team *pTeam = getTeamById(t);
+		for (int p = 0; p < 6; p++) {
+			Player *pPlayer = pTeam->getPlayer(p);
+			if (pPlayer->canAccessCoordinate(puckPos.x, puckPos.y)) 
+				tmpPlayers[t] |= 1 << p;
+		}
+	}
+
+	// The question is how to handle the area where only the guard and backs from the same team can be
+	// Currently, define as OK if both teams can access the puck
+	bool res;
+	if (tmpPlayers[0] == 0 && tmpPlayers[1] == 0)
+		res = true;
+	else if (tmpPlayers[0] == 0 || tmpPlayers[1] == 0) {
+		// New player
+		if (players[0] == tmpPlayers[0] && players[1] == tmpPlayers[1])
+			res = getGametime() - constructiveTime < 5000;
+		else {
+			constructiveTime = getGametime();
+			res = true;
+		}
+	}
+	else res = true;
+
+	players[0] = tmpPlayers[0];
+	players[1] = tmpPlayers[1];
+
+	return res;
 }
