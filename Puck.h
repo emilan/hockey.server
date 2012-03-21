@@ -19,8 +19,12 @@ ObjectTracker *getPuckTracker();
 CamCapture *getCamCapture();
 PuckPosition getPuckPosition();
 int getPuckHistory(PuckPosition *hist, unsigned int length);
+bool isHomeGoal();
+bool isAwayGoal();
+bool hasPuckPosition();
 
 float getCameraFrequency();
+float getPuckSpeed();
 
 #define IMAGESIZE cvSize(744 / 2, 480 / 2)
 

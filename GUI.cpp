@@ -33,10 +33,12 @@ void draw() {
 	
 	CvScalar puckColor = cvScalar(0, 255, 0, 255);
 
-	PuckPosition hist[200];
+	PuckPosition hist[100];
 	int historyLength = getPuckHistory(hist, 100);
-	for (int i = 0; i < historyLength; i++)
-		cvCircle(pImg, cvPoint(WIDTH / 2 + hist[i].x, HEIGHT / 2 + hist[i].y), 11, cvScalar(0, 255 * i / 100, 0, 255));
+	for (int i = 0; i < historyLength; i++) {
+		int shade = 255 * i / 100;
+		cvCircle(pImg, cvPoint(WIDTH / 2 + hist[i].x, HEIGHT / 2 + hist[i].y), 11, hasPuckPosition() ? cvScalar(0, shade, 0, 255) : cvScalar(0, 0, shade, 255));
+	}
 
 	CvScalar colorFinland = cvScalar(255, 255, 255, 255);
 	CvScalar colorSweden = cvScalar(0, 255, 255, 255);
@@ -58,7 +60,7 @@ void draw() {
 				cvPoint(playerCenter.x + playerFaces.x * playerClubLength * cos (rot), 
 						playerCenter.y + playerFaces.y * playerClubLength * sin (rot));
 
-			CvScalar playerColor = pPlayer->canAccessCoordinate(WIDTH / 2 + puck.x, HEIGHT / 2 + puck.y) ? 
+			CvScalar playerColor = hasPuckPosition() && pPlayer->canAccessCoordinate(WIDTH / 2 + puck.x, HEIGHT / 2 + puck.y) ? 
 				(constructive ? cvScalar(0, 255, 0) : cvScalar(0, 0, 255, 255)) : teamColor;
 
 			cvCircle(pImg, playerCenter, 15, playerColor, 3);
@@ -75,6 +77,22 @@ void draw() {
 
 	sprintf_s(buf, "Cam: %.2f Hz", getCameraFrequency());
 	cvPutText(pImg, buf, cvPoint(0, 45), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+	static float maxPuckSpeed = 0;
+	float puckSpeed = getPuckSpeed();
+	if (puckSpeed > maxPuckSpeed)
+		maxPuckSpeed = puckSpeed;
+	sprintf_s(buf, "Speed: %.2f km/h", puckSpeed);
+	cvPutText(pImg, buf, cvPoint(150, 15), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+	sprintf_s(buf, "Max: %.2f km/h", maxPuckSpeed);
+	cvPutText(pImg, buf, cvPoint(150, 30), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+	if (isHomeGoal())
+		cvPutText(pImg, "GOAL->", cvPoint(350, 260), &cvFont(3, 3), colorSweden);
+	if (isAwayGoal())
+		cvPutText(pImg, "<-GOAL", cvPoint(350, 260), &cvFont(3, 3), colorFinland);
+	
 
 	cvShowImage("Hockey Server Visualisation", pImg);
 	cvWaitKey(1);

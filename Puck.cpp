@@ -17,9 +17,13 @@ using namespace std;
 struct Puck {
 	vector<PuckPosition> history;
 	HANDLE historyMutex;
+	bool hasPosition;
+	bool homeGoal;
+	bool awayGoal;
 
 	CvPoint2D32f goal1;
 	CvPoint2D32f goal2;
+
 	Puck() {};
 	Puck(IplImage* frame);
 	
@@ -52,26 +56,63 @@ Puck::Puck(IplImage* frame) {
 
 void Puck::updatePosition(CvPoint2D32f* ps){
 	//gör linjär transformation pixelkordinatrer -> millimeter med hjälp utav målens position
-	PuckPosition pos;
- 	pos.x = ps->x - (goal1.x + goal2.x) / 2;
-	pos.y = ps->y - (goal1.y + goal2.y) / 2;
+	hasPosition = !(ps->x == 0 && ps->y == 0);
+	if (hasPosition) {
+		PuckPosition pos;
+ 		pos.x = ps->x - (goal1.x + goal2.x) / 2;
+		pos.y = ps->y - (goal1.y + goal2.y) / 2;
 
-	float v1x = goal2.x - goal1.x;
-	float v1y = goal2.y - goal1.y; 
-	float v2x = v1y;
-	float v2y = -v1x;
-	float norm = sqrt(v1x * v1x + v1y * v1y);
+		float v1x = goal2.x - goal1.x;
+		float v1y = goal2.y - goal1.y; 
+		float v2x = v1y;
+		float v2y = -v1x;
+		float norm = sqrt(v1x * v1x + v1y * v1y);
 
-	v1x = v1x / norm;
-	v1y = v1y / norm;
-	v2x = v2x / norm;
-	v2y = v2y / norm;
-	pos.x = v1x * pos.x + v1y * pos.y;
-	pos.y = v2x * pos.x + v2y * pos.y;
-	pos.x *= 2 * DISTANCETOGOAL / norm;
-	pos.y *= 2 * DISTANCETOGOAL / norm;
+		v1x = v1x / norm;
+		v1y = v1y / norm;
+		v2x = v2x / norm;
+		v2y = v2y / norm;
+		pos.x = v1x * pos.x + v1y * pos.y;
+		pos.y = v2x * pos.x + v2y * pos.y;
+		pos.x *= 2 * DISTANCETOGOAL / norm;
+		pos.y *= 2 * DISTANCETOGOAL / norm;
 
-	addHistory(pos);
+		addHistory(pos);
+		homeGoal = awayGoal = false;
+	}
+	else {
+		if (history.size() >= 2) {
+			// TODO: Don't use just two last points
+			// TODO: Either put something on top of goals or allow detection of puck in goal (because sometimes it succeeds)
+			PuckPosition last = history[history.size() - 1];
+			float awayGoallineX = 290;
+			float goallineMinY = -50;
+			float goallineMaxY = 50;
+
+			float homeGoallineX = -290;
+
+			PuckPosition secondLast = history[history.size() - 2];
+			// Between center of field and finnish goal line and moving towards finnish goal
+			if (last.x < awayGoallineX && last.x > 0 && secondLast.x < last.x) {
+				// y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
+				float y = 1.0f * (last.y - secondLast.y) / (last.x - secondLast.x) * (awayGoallineX - secondLast.x) + secondLast.y;
+				if (y > goallineMinY && y < goallineMaxY) {
+					homeGoal = true;
+					awayGoal = false;
+				}
+				else homeGoal = awayGoal = false;
+			}
+			// Between center and swedish goal line and moving towards swedish goal
+			else if (last.x > homeGoallineX && last.x < 0 && secondLast.x > last.x) {
+				float y = 1.0f * (last.y - secondLast.y) / (last.x - secondLast.x) * (homeGoallineX - secondLast.x) + secondLast.y;
+				if (y > goallineMinY && y < goallineMaxY) {
+					homeGoal = false;
+					awayGoal = true;
+				}
+				else homeGoal = awayGoal = false;
+			}
+		}
+	}
 }
 
 // Instances, etc.
@@ -177,4 +218,32 @@ CamCapture *getCamCapture() {
 
 float getCameraFrequency() {
 	return cameraFrequency;
+}
+
+bool isHomeGoal() {
+	return puck.homeGoal;
+}
+
+bool isAwayGoal() {
+	return puck.awayGoal;
+}
+
+bool hasPuckPosition() {
+	return puck.hasPosition;
+}
+
+float getPuckSpeed() {
+	if (puck.history.size() >= 2) {
+		PuckPosition last = puck.history[puck.history.size() - 1];
+		PuckPosition secondLast = puck.history[puck.history.size() - 2];
+
+		float dx = last.x - secondLast.x;
+		float dy = last.y - secondLast.y;
+
+		float length = sqrt(dx * dx + dy * dy);
+		float freq = getCameraFrequency();
+
+		return length * freq / 1000000 * 3600;
+	}
+	return 0;
 }
