@@ -149,6 +149,15 @@ void ObjectTracker::setCalibrationMode(bool cal){
 		cvDestroyWindow("eroded image");
 	}
 }
+
+CvScalar ObjectTracker::getMaxColor() {
+	return maxColor;
+}
+
+CvScalar ObjectTracker::getMinColor() {
+	return minColor;
+}
+
 //void ObjectTracker::lighten(IplImage* img, int p)
 //{
 //	//*img = p**img;

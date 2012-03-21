@@ -17,13 +17,20 @@ void calibrateCamera() {
 	cout << "s - save color to file" << endl
 		 << "q - quit calibration" << endl;
 
+	bool calibrating=true;
+	ObjectTracker *pTrackPuck = getPuckTracker();
+	CamCapture *pCamCapture = getCamCapture();
+
+	CvScalar cvMin = pTrackPuck->getMinColor();
+	CvScalar cvMax = pTrackPuck->getMaxColor();
+
 	// definierar max/min på möjliga färgvärden
-	int hmin = 0
-	   ,hmax = 255
-	   ,smin = 0
-	   ,smax = 255
-	   ,vmin = 0
-	   ,vmax = 255;
+	int hmin = cvMin.val[0]
+	   ,hmax = cvMax.val[0]
+	   ,smin = cvMin.val[1]
+	   ,smax = cvMax.val[1]
+	   ,vmin = cvMin.val[2]
+	   ,vmax = cvMax.val[2];
 
 	// skapar en toolbar med sliders och binder dem till färgvärden.
 	cvNamedWindow(WND_TOOLBAR, 1);
@@ -34,10 +41,6 @@ void calibrateCamera() {
     cvCreateTrackbar("V Min", WND_TOOLBAR, &vmin, 256, 0);
     cvCreateTrackbar("V Max", WND_TOOLBAR, &vmax, 256, 0);
 	
-	bool calibrating=true;
-	ObjectTracker *pTrackPuck = getPuckTracker();
-	CamCapture *pCamCapture = getCamCapture();
-
 	pTrackPuck->setCalibrationMode(true);//track_puck objektet sätts i kalibreringsmode -> den visar bilder
 	IplImage* frame= cvCreateImage(IMAGESIZE, 8, 3); //skapar minnesplats för bild
 	CvPoint2D32f* puck=new CvPoint2D32f();//skapar position för puck

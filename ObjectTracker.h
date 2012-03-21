@@ -23,6 +23,8 @@ class ObjectTracker {
 	  void setColor(CvScalar _minColor, CvScalar _maxColor);
 	  void saveColor();
 	  void setCalibrationMode(bool cal);
+	  CvScalar getMinColor();
+	  CvScalar getMaxColor();
 	private:
 		string colorName;
 		CvScalar minColor;
