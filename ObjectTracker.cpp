@@ -11,10 +11,8 @@ ObjectTracker::ObjectTracker(IplImage* _searchRegion,string color,bool _calibrat
 	maxColor=CvScalar();
 	
 	if(!color.empty()){
-		
 		colorName=color;//färgen att leta efter
 		setColor(color);
-
 	}
 	//skapar buffrar för de olika stegen i bildhanterings processen
 	maskedImage=cvCreateImage(cvGetSize(searchRegion),8,3);
@@ -91,40 +89,27 @@ void ObjectTracker::setColor(CvScalar _minColor, CvScalar _maxColor){
 	maxColor=_maxColor;
 }
 
-void ObjectTracker::setColor(string color){//plockar fram max och min hsv-värden för önskad färg ur text fil
+//plockar fram max och min hsv-värden för önskad färg ur text-fil: <color>.txt
+void ObjectTracker::setColor(string color){
 	ifstream in;
-	in.open("colorFile.txt");
-	colorName=color;
-	if(in.is_open()){
+	char filename[20];
+	sprintf_s(filename, "%s.txt", color.c_str());
+	in.open(filename);
+
+	if (in.is_open()) {
 		string inColor;
-		int rMin,rMax,gMin,gMax,bMin,bMax=0;
-		char name[10];
-		// läs in färger tills den hittar rätt eller filen tar slut
-		//while(in>>inColor>>rMin>>rMax>>gMin>>gMax>>bMin>>bMax && !color.compare(inColor));
+		int hMin, hMax, sMin, sMax, vMin, vMax = 0;
 		
-		while(getline(in,inColor)){//läser in rader från fil
-			sscanf(inColor.c_str(),"%s %d %d %d %d %d %d",name,&rMin,&rMax,&gMin,&gMax,&bMin,&bMax);
-			
-			if(!strcmp(name,color.c_str())){//
-				
-				minColor=cvScalar(rMin,gMin,bMin,0);
-				maxColor=cvScalar(rMax,gMax,bMax,0);
-				break;
+		if (getline(in, inColor)) { 
+			if (sscanf(inColor.c_str(), "%d %d %d %d %d %d", &hMin, &hMax, &sMin, &sMax, &vMin, &vMax) == 6) {
+				minColor=cvScalar(hMin, sMin, vMin, 0);
+				maxColor=cvScalar(hMax, sMax, vMax, 0);
 			}
+			else cerr << filename << " found, but could not parse it" << endl;
 		}
 		in.close();
-		/*if(color==inColor){
-			minColor=cvScalar(rMin,gMin,bMin,0);
-			maxColor=cvScalar(rMax,gMax,bMax,0);
-		}else{
-			cerr<<"could not find color "<<color<<" in file"<<endl;
-			exit(1);
-		}*/
-	}else{
-		cerr<<"could not open file colorFile"<<endl;
-		/*system("pause");
-		exit(1);*/
 	}
+	else cerr << "could not open file " << filename << endl;
 }
 
 void ObjectTracker::saveColor(){//sparar ner nuvarande färg till fil
