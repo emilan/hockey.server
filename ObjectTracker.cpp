@@ -41,17 +41,6 @@ void ObjectTracker::trackObject(IplImage* image,CvPoint2D32f* point,bool erode){
 	cvInRangeS(maskedImage, minColor, maxColor, tresholdImage );
 	
 	cvErode(tresholdImage,erodeImg,NULL,1);
-	if(calibrationMode){
-		//cout<<minColor->val[0];
-		cvShowImage("treshold image",tresholdImage );
-		cvShowImage("eroded image",erodeImg );
-		cvShowImage("masked image",maskedImage );
-
-		cvShowImage("image",image );
-		
-		//while(cvWaitKey(1)<0);
-		
-	}
 	
 	//applies the searchregion to the picture
 	
@@ -76,6 +65,34 @@ void ObjectTracker::trackObject(IplImage* image,CvPoint2D32f* point,bool erode){
 	CvPoint2D32f tempPoint=cvPoint2D32f(posX,posY);
 	*point=tempPoint;
 
+	if(calibrationMode) {
+		char buf[50];
+		sprintf_s(buf, "moment10: %.2f", moment10);
+		cvPutText(erodeImg, buf, cvPoint(0, 15), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+		sprintf_s(buf, "moment01: %.2f", moment01);
+		cvPutText(erodeImg, buf, cvPoint(0, 30), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+		sprintf_s(buf, "area    : %.2f", moment01);
+		cvPutText(erodeImg, buf, cvPoint(0, 45), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+		sprintf_s(buf, "posX: %.2f", posX);
+		cvPutText(erodeImg, buf, cvPoint(200, 15), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+		sprintf_s(buf, "posY: %.2f", posY);
+		cvPutText(erodeImg, buf, cvPoint(200, 30), &cvFont(1), cvScalar(255, 255, 255, 255));
+
+		cvCircle(image, cvPoint(posX, posY), 10, cvScalar(0, 255, 0, 255));
+
+		cvShowImage("treshold image",tresholdImage );
+		cvShowImage("eroded image",erodeImg );
+		cvShowImage("masked image",maskedImage );
+
+		cvShowImage("image",image );
+		
+		//while(cvWaitKey(1)<0);
+		
+	}
 }
 //int ObjectTracker::colorAtPixel(IplImage* mask,int x, int y){
 //	if(x>mask->width||x<0||y>mask->height||y<0){
