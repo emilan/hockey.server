@@ -10,19 +10,11 @@
 
 using namespace std;
 
-#define WND_TOOLBAR	"toolbar"
-
-void calibrateCamera() {
-	cout << "Camera Calibrator" << endl;
-	cout << "s - save color to file" << endl
-		 << "q - quit calibration" << endl;
-
+void calibrateCamera(CamCapture *pCamCapture, ObjectTracker *pTrackCalib, char *name) {
 	bool calibrating=true;
-	ObjectTracker *pTrackPuck = getPuckTracker();
-	CamCapture *pCamCapture = getCamCapture();
 
-	CvScalar cvMin = pTrackPuck->getMinColor();
-	CvScalar cvMax = pTrackPuck->getMaxColor();
+	CvScalar cvMin = pTrackCalib->getMinColor();
+	CvScalar cvMax = pTrackCalib->getMaxColor();
 
 	// definierar max/min på möjliga färgvärden
 	int hmin = cvMin.val[0]
@@ -33,27 +25,27 @@ void calibrateCamera() {
 	   ,vmax = cvMax.val[2];
 
 	// skapar en toolbar med sliders och binder dem till färgvärden.
-	cvNamedWindow(WND_TOOLBAR, 1);
-    cvCreateTrackbar("H Min", WND_TOOLBAR, &hmin, 360, 0);
-    cvCreateTrackbar("H Max", WND_TOOLBAR, &hmax, 360, 0);
-    cvCreateTrackbar("S Min", WND_TOOLBAR, &smin, 256, 0);
-	cvCreateTrackbar("S Max", WND_TOOLBAR, &smax, 256, 0);
-    cvCreateTrackbar("V Min", WND_TOOLBAR, &vmin, 256, 0);
-    cvCreateTrackbar("V Max", WND_TOOLBAR, &vmax, 256, 0);
+	cvNamedWindow(name, 1);
+    cvCreateTrackbar("H Min", name, &hmin, 360, 0);
+    cvCreateTrackbar("H Max", name, &hmax, 360, 0);
+    cvCreateTrackbar("S Min", name, &smin, 256, 0);
+	cvCreateTrackbar("S Max", name, &smax, 256, 0);
+    cvCreateTrackbar("V Min", name, &vmin, 256, 0);
+    cvCreateTrackbar("V Max", name, &vmax, 256, 0);
 	
-	pTrackPuck->setCalibrationMode(true);//track_puck objektet sätts i kalibreringsmode -> den visar bilder
+	pTrackCalib->setCalibrationMode(true);//track_puck objektet sätts i kalibreringsmode -> den visar bilder
 	IplImage* frame= cvCreateImage(IMAGESIZE, 8, 3); //skapar minnesplats för bild
 	CvPoint2D32f* puck=new CvPoint2D32f();//skapar position för puck
 	
 	while(calibrating){
-		pTrackPuck->setColor(cvScalar(hmin, smin, vmin), cvScalar(hmax, smax, vmax)); //uppdatera bildhanteringen med ev. nya värden
+		pTrackCalib->setColor(cvScalar(hmin, smin, vmin), cvScalar(hmax, smax, vmax)); //uppdatera bildhanteringen med ev. nya värden
 		pCamCapture->myQueryFrame(frame);//ta ny bild
 		
-		pTrackPuck->trackObject(frame, puck);//gör bildhantering
+		pTrackCalib->trackObject(frame, puck);//gör bildhantering
 		
 		switch(cvWaitKey(1)){ //uppdaterar visade bilder och väntar på tangent input
 			case 's': //sparar nuvarande värger till fil och avslutar
-				pTrackPuck->saveColor();
+				pTrackCalib->saveColor();
 				calibrating=false;
 				break;
 			case 'q':
@@ -61,6 +53,23 @@ void calibrateCamera() {
 				break;
 		}
 	}
-	pTrackPuck->setCalibrationMode(false);
-	cvDestroyWindow(WND_TOOLBAR);
+	pTrackCalib->setCalibrationMode(false);
+	cvDestroyWindow(name);
+	cvReleaseImage(&frame);
+}
+
+void calibrateCamera() {
+	cout << "Camera Calibrator (puck, home goal, away goal)" << endl;
+	cout << "s - save current calibration, go to next" << endl
+		 << "q - cancel current calibration, go to next" << endl;
+
+	CamCapture *pCamCapture = getCamCapture();
+	calibrateCamera(pCamCapture, getPuckTracker(), "puck");
+	calibrateCamera(pCamCapture, getHomeGoalTracker(), "home goal");
+	calibrateCamera(pCamCapture, getAwayGoalTracker(), "away goal");
+
+	IplImage* frame= cvCreateImage(IMAGESIZE, 8, 3); //skapar minnesplats för bild
+	pCamCapture->myQueryFrame(frame);//ta ny bild
+	trackGoals(frame);
+	cvReleaseImage(&frame);
 }

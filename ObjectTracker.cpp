@@ -22,7 +22,7 @@ ObjectTracker::ObjectTracker(IplImage* _searchRegion,string color,bool _calibrat
 	moments = (CvMoments*)malloc(sizeof(CvMoments));
 	
 }
-void ObjectTracker::trackObject(IplImage* image,CvPoint2D32f* point,bool erode){
+void ObjectTracker::trackObject(IplImage* image,CvPoint2D32f* point) {
 	//ändrar storlek på buffrarna om bilden att analysera är fel storlek
 	if(image->height!=searchRegion->height||image->width!=searchRegion->width){
 		cerr<<"wrong image format: got "<<image->height<<" "<<image->width<<", expected "<<maskedImage->height<<" "<<maskedImage->width<<endl;
@@ -45,9 +45,7 @@ void ObjectTracker::trackObject(IplImage* image,CvPoint2D32f* point,bool erode){
 	//applies the searchregion to the picture
 	
 	//extracts the proper colorrange from the picture
-	if (cvErode)
-		cvMoments(erodeImg, moments, 1);
-	else cvMoments(tresholdImage, moments, 1);
+	cvMoments(erodeImg, moments, 1);
 	
 	// The actual moment values
 	double moment10 = cvGetSpatialMoment(moments, 1, 0); //räknar ut intensitetscentrum i x-led

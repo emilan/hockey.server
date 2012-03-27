@@ -11,7 +11,7 @@
 using namespace std;
 
 // Class methods
-#define DISTANCETOGOAL	300
+#define DISTANCETOGOAL	305
 #define PUCKHISTORY		100
 
 struct Puck {
@@ -24,8 +24,7 @@ struct Puck {
 	CvPoint2D32f goal1;
 	CvPoint2D32f goal2;
 
-	Puck() {};
-	Puck(IplImage* frame);
+	Puck();
 	
 	void updatePosition(CvPoint2D32f* point);
 	void addHistory(PuckPosition pos);
@@ -39,19 +38,14 @@ void Puck::addHistory(PuckPosition pos) {
 	ReleaseMutex(historyMutex);
 }
 
-Puck::Puck(IplImage* frame) {
+Puck::Puck() {
 	historyMutex = CreateMutex(NULL, false, "readMutex");
 
 	PuckPosition pos = {0, 0};
 	addHistory(pos);
-	ObjectTracker track_goal1 = ObjectTracker(cvLoadImage("goal1.bmp", 0), "red");	//object som letar efter ena målet
-	ObjectTracker track_goal2 = ObjectTracker(cvLoadImage("goal2.bmp", 0), "red");	//object som letar efter andra målet
 		
 	goal1 = cvPoint2D32f(62, 117);	//skapar punkter med målens ungefärliga position
 	goal2 = cvPoint2D32f(324, 116);
-		
-	//track_goal1.trackObject(frame, &goal1, false);	//hittar målens position
-	//track_goal2.trackObject(frame, &goal2, false);
 }
 
 void Puck::updatePosition(CvPoint2D32f* ps){
@@ -119,6 +113,9 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 namespace puckns {
 	CamCapture *capture;
 	ObjectTracker track_puck;
+	ObjectTracker track_goal1;
+	ObjectTracker track_goal2;
+
 	Puck puck;
 
 	bool trackingInitialized = false;
@@ -153,6 +150,11 @@ unsigned __stdcall cameraThread(void* param) {
 	return NULL;
 }
 
+void trackGoals(IplImage *pFrame) {
+	track_goal1.trackObject(pFrame, &puck.goal1);	//hittar målens position
+	track_goal2.trackObject(pFrame, &puck.goal2);
+}
+
 bool initializeTracking() {
 	if(!trackingInitialized) {
 		capture = new CamCapture();
@@ -164,6 +166,8 @@ bool initializeTracking() {
 		try {
 			/*skapar ett bildbehandlings objekt somletar efter grönt på spelplanen, se Objecttracker.cpp*/
 			track_puck = ObjectTracker(cvLoadImage("playField.bmp", 0), "green");
+			track_goal1 = ObjectTracker(cvLoadImage("goal1.bmp", 0), "goal1");	//object som letar efter ena målet
+			track_goal2 = ObjectTracker(cvLoadImage("goal2.bmp", 0), "goal2");	//object som letar efter andra målet
 		} catch(exception e) {
 			cout << "no mask or color information" << endl;
 			return false;
@@ -173,7 +177,7 @@ bool initializeTracking() {
 		//tar en bild och använder den för att skapa en puckrepresentation
 		IplImage* frame = cvCreateImage(IMAGESIZE, 8, 3);
 		capture->myQueryFrame(frame);
-		puck = Puck(frame);
+		trackGoals(frame);
 		
 		startTrackingPuck();
 	}
@@ -210,6 +214,14 @@ int getPuckHistory(PuckPosition *hist, unsigned int length) {
 
 ObjectTracker *getPuckTracker() {
 	return &track_puck;
+}
+
+ObjectTracker *getHomeGoalTracker() {
+	return &track_goal1;
+}
+
+ObjectTracker *getAwayGoalTracker() {
+	return &track_goal2;
 }
 
 CamCapture *getCamCapture() {
