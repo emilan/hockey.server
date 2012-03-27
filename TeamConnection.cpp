@@ -243,17 +243,13 @@ bool setUpConnections(void(*stopFunction)(void),
 	return true;
 }
 
-void startListening() {
-	listening = true;
-	resumeListening();
-}
-
 void pauseListening() {
 	SuspendThread(networkReceiverThreadHandle);
 	SuspendThread(clientsAliveThreadHandle);
 }
 
 void resumeListening() {
+	listening = true;
 	ResumeThread(networkReceiverThreadHandle);
 	ResumeThread(clientsAliveThreadHandle);
 }
