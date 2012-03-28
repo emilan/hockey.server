@@ -10,7 +10,7 @@
 
 #include <process.h>
 
-#define WIDTH	849
+#define WIDTH	836
 #define HEIGHT	460
 #define PI 3.14159265
 

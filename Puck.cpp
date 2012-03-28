@@ -11,7 +11,7 @@
 using namespace std;
 
 // Class methods
-#define DISTANCETOGOAL	305
+#define DISTANCETOGOAL	315
 #define PUCKHISTORY		100
 
 struct Puck {

@@ -80,7 +80,7 @@ namespace limitsns {
 // dock senast inom 5 sekunder.
 bool checkConstructive() {
 // TODO: Rethink where coordinates are handled!
-#define WIDTH	849
+#define WIDTH	836
 #define HEIGHT	460
 
 	PuckPosition puckPos = getPuckPosition();
