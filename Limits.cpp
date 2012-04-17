@@ -22,7 +22,6 @@ namespace limitsns {
 using namespace limitsns;
 
 void removePlayerCommands(int teamId, int playerId) {
-	// TODO: Some kind of bug here? Reproduce!
 	for (vector<ApprovedCommand>::iterator it = approvedCommands.begin(); it != approvedCommands.end(); ) {
 		if (it->teamId == teamId && it->playerId == playerId)
 			it = approvedCommands.erase(it);
@@ -79,13 +78,7 @@ namespace limitsns {
 // Efter det att pucken är möjlig att nå måste den tävlande snarast uträtta något konstruktivt,
 // dock senast inom 5 sekunder.
 bool checkConstructive() {
-// TODO: Rethink where coordinates are handled!
-#define WIDTH	836
-#define HEIGHT	460
-
 	PuckPosition puckPos = getPuckPosition();
-	puckPos.x = WIDTH / 2 + puckPos.x;
-	puckPos.y = HEIGHT / 2 + puckPos.y;
 	unsigned char tmpPlayers[2] = {0, 0};
 	
 	for (int t = 0; t < 2; t++) {

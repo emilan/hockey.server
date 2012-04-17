@@ -10,8 +10,9 @@
 
 #include <process.h>
 
-#define WIDTH	836
-#define HEIGHT	460
+// Currently the same as board width/height, but not required
+#define WINDOWWIDTH		836
+#define WINDOWHEIGHT	460
 #define PI 3.14159265
 
 IplImage *pImgBg;
@@ -37,7 +38,7 @@ void draw() {
 	int historyLength = getPuckHistory(hist, 100);
 	for (int i = 0; i < historyLength; i++) {
 		int shade = 255 * i / 100;
-		cvCircle(pImg, cvPoint(WIDTH / 2 + hist[i].x, HEIGHT / 2 + hist[i].y), 11, hasPuckPosition() ? cvScalar(0, shade, 0, 255) : cvScalar(0, 0, shade, 255));
+		cvCircle(pImg, cvPoint(WINDOWWIDTH / 2 + hist[i].x, WINDOWHEIGHT / 2 + hist[i].y), 11, hasPuckPosition() ? cvScalar(0, shade, 0, 255) : cvScalar(0, 0, shade, 255));
 	}
 
 	CvScalar colorFinland = cvScalar(255, 255, 255, 255);
@@ -53,14 +54,14 @@ void draw() {
 			Player *pPlayer = pTeam->getPlayer(j);
 			PlayerLocation loc = pPlayer->getCurrentLocation();
 			float rot = - pPlayer->getCurrentRotation() / 255.0f * 2 * PI + PI / 2;	// vridning medsols axel -> vridning motsols spelare
-			CvPoint playerCenter = cvPoint(WIDTH / 2 + loc.x, HEIGHT / 2 + loc.y);
+			CvPoint playerCenter = cvPoint(WINDOWWIDTH / 2 + loc.x, WINDOWHEIGHT / 2 + loc.y);
 			
 			int playerClubLength = 41;
 			CvPoint playerClub = 
 				cvPoint(playerCenter.x + playerFaces.x * playerClubLength * cos (rot), 
 						playerCenter.y + playerFaces.y * playerClubLength * sin (rot));
 
-			CvScalar playerColor = hasPuckPosition() && pPlayer->canAccessCoordinate(WIDTH / 2 + puck.x, HEIGHT / 2 + puck.y) ? 
+			CvScalar playerColor = hasPuckPosition() && pPlayer->canAccessCoordinate(puck.x, puck.y) ? 
 				(constructive ? cvScalar(0, 255, 0) : cvScalar(0, 0, 255, 255)) : teamColor;
 
 			cvCircle(pImg, playerCenter, 15, playerColor, 3);
@@ -105,10 +106,10 @@ unsigned __stdcall drawingThread(void* param){
 }
 
 void startDrawing() {
-	pImg = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);
-	pImgBg = cvCreateImage(cvSize(WIDTH, HEIGHT), 8, 3);
+	pImg = cvCreateImage(cvSize(WINDOWWIDTH, WINDOWHEIGHT), 8, 3);
+	pImgBg = cvCreateImage(cvSize(WINDOWWIDTH, WINDOWHEIGHT), 8, 3);
 	//IplImage *pImgAreas = cvLoadImage("areas.png", CV_LOAD_IMAGE_UNCHANGED);
-	cvRectangle(pImgBg, cvPoint(0, 0), cvPoint(WIDTH, HEIGHT), cvScalar(0, 0, 0, 0), CV_FILLED);
+	cvRectangle(pImgBg, cvPoint(0, 0), cvPoint(WINDOWWIDTH, WINDOWHEIGHT), cvScalar(0, 0, 0, 0), CV_FILLED);
 	//cvAdd(pImgAreas, pImgBg, pImgBg, 0);
 	for (int i = 0; i < 2; i++) {
 		Team *pTeam = getTeamById(i);
@@ -117,7 +118,7 @@ void startDrawing() {
 			for (int k = 0; k < 256; k++) {
 				PlayerLocation loc = pPlayer->getLocation(k);
 				int shade = 32 + 7 * k / 8;
-				cvCircle(pImgBg, cvPoint(WIDTH / 2 + loc.x, HEIGHT / 2 + loc.y), 2, cvScalar(shade, shade, shade, 255), CV_FILLED);
+				cvCircle(pImgBg, cvPoint(WINDOWWIDTH / 2 + loc.x, WINDOWHEIGHT / 2 + loc.y), 2, cvScalar(shade, shade, shade, 255), CV_FILLED);
 			}
 		}
 	}

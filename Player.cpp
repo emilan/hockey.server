@@ -80,9 +80,16 @@ bool Player::loadArea(char *filename) {
 }
 
 bool Player::canAccessCoordinate(int x, int y) {
+#define WIDTH	836
+#define HEIGHT	460
+
 	CvSize sz = cvGetSize(pImgArea);
 	if (x > sz.width - 1 || y > sz.height - 1 || x < 0 || y < 0)
 		return false;
+
+	// Transform to area mask pixel coordinate
+	y += HEIGHT / 2;
+	x += WIDTH / 2;
 
 	CvScalar s = cvGet2D(pImgArea, y, x);
 	return s.val[0] != 0;
