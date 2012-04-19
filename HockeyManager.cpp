@@ -1,5 +1,6 @@
 #include "HockeyManager.h"
 #include "HockeyGame.h"
+#include "Limits.h"
 
 #include <iostream>
 #include <conio.h>
@@ -17,20 +18,24 @@ int main() {
 	while(!quit) {
 		switch(getch()) {	//lyssnar efter input från tangetbord
 		case 'i':
-				cout << "starting..." << endl;
-				hockeygame::startGame();
+			cout << "starting..." << endl;
+			hockeygame::startGame();
 			break;
 		case 'p':
-				cout << "pausing" << endl;
-				hockeygame::pauseGame();
+			cout << "pausing" << endl;
+			hockeygame::pauseGame();
 			break;
 		case 'r':
-				cout << "resuming" << endl;
-				hockeygame::resumeGame();
+			cout << "resuming" << endl;
+			hockeygame::resumeGame();
 			break;
 		case 's':
-				cout << "stopping" << endl;
-				hockeygame::stopGame();
+			cout << "stopping" << endl;
+			hockeygame::stopGame();
+			break;
+		case 'f':
+			cout << "face off!" << endl;
+			limits::faceOff();
 			break;
 		case 'q':
 			quit = true;	// avslutar loopen
@@ -58,7 +63,9 @@ void showHelp() {
 		 << "q - quit game" << endl
 		 << "h - show this help" << endl
 		 << "c - calibrate microcontrollers" << endl
-		 << "a - calibrate image processing" << endl;
+		 << "a - calibrate image processing" << endl
+		 << "f - face off" << endl	// TODO: Automatic?
+		 ;
 }
 
 void greeter() {

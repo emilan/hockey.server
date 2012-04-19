@@ -1,6 +1,7 @@
 #include "Puck.h"
 #include "ObjectTracker.h"
 #include "CamCapture.h"
+#include "Limits.h"
 
 #include "cv.h"
 
@@ -20,6 +21,7 @@ struct Puck {
 	bool hasPosition;
 	bool homeGoal;
 	bool awayGoal;
+	bool goalDetected;
 
 	CvPoint2D32f goal1;
 	CvPoint2D32f goal2;
@@ -46,6 +48,8 @@ Puck::Puck() {
 		
 	goal1 = cvPoint2D32f(62, 117);	//skapar punkter med målens ungefärliga position
 	goal2 = cvPoint2D32f(324, 116);
+
+	goalDetected = false;
 }
 
 void Puck::updatePosition(CvPoint2D32f* ps){
@@ -72,18 +76,20 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 		pos.y *= 2 * DISTANCETOGOAL / norm;
 
 		addHistory(pos);
-		homeGoal = awayGoal = false;
+		homeGoal = awayGoal = goalDetected = false;
+
+		limits::update();
 	}
-	else {
-		if (history.size() >= 2) {
-			// TODO: Don't use just two last points
+	else {	// Puck becomes invisible when in goal. This code checks if the puck's trajectory is towards one of the goals.
+		if (history.size() >= 2 && !goalDetected) {
+			// TODO: Don't use just two last points (only if it doesn't work)
 			// TODO: Either put something on top of goals or allow detection of puck in goal (because sometimes it succeeds)
 			PuckPosition last = history[history.size() - 1];
-			float awayGoallineX = 290;
+			float awayGoallineX = 284;
 			float goallineMinY = -50;
 			float goallineMaxY = 50;
 
-			float homeGoallineX = -290;
+			float homeGoallineX = -284;
 
 			PuckPosition secondLast = history[history.size() - 2];
 			// Between center of field and finnish goal line and moving towards finnish goal
@@ -91,8 +97,13 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 				// y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
 				float y = 1.0f * (last.y - secondLast.y) / (last.x - secondLast.x) * (awayGoallineX - secondLast.x) + secondLast.y;
 				if (y > goallineMinY && y < goallineMaxY) {
-					homeGoal = true;
-					awayGoal = false;
+					// Goal detected. Ask limits if okay goal
+					if (limits::isOkayHomeGoal()) {
+						homeGoal = true;
+						awayGoal = false;
+					}
+					else homeGoal = awayGoal = false;
+					goalDetected = true;
 				}
 				else homeGoal = awayGoal = false;
 			}
@@ -100,8 +111,13 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 			else if (last.x > homeGoallineX && last.x < 0 && secondLast.x > last.x) {
 				float y = 1.0f * (last.y - secondLast.y) / (last.x - secondLast.x) * (homeGoallineX - secondLast.x) + secondLast.y;
 				if (y > goallineMinY && y < goallineMaxY) {
-					homeGoal = false;
-					awayGoal = true;
+					// Goal detected. Ask limits if okay goal
+					if (limits::isOkayAwayGoal()) {
+						homeGoal = false;
+						awayGoal = true;
+					}
+					else homeGoal = awayGoal = false;
+					goalDetected = true;
 				}
 				else homeGoal = awayGoal = false;
 			}
@@ -158,6 +174,7 @@ void trackGoals(IplImage *pFrame) {
 bool initializeTracking() {
 	if(!trackingInitialized) {
 		capture = new CamCapture();
+		limits::init();
 		
 		if (!capture->initCam()) {
 			fprintf(stderr, "Could not initialize capturing...\n");

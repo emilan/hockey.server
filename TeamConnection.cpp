@@ -141,7 +141,7 @@ unsigned __stdcall networkReceiverThread(void *param) {
 						myfile << (int)(i == 3 ? (signed char)msg[i] : (unsigned char)msg[i]) << "\t";
 					}
 					// one command should now be in msg
-					if (isCommandOkay(teamC == homeTeamConnection ? 0 : 1, cmd)) {
+					if (limits::isCommandOkay(teamC == homeTeamConnection ? 0 : 1, cmd)) {
 						memcpy(msg + index, cmd, 5);
 						index += 5;
 						myfile << "+";

@@ -1,6 +1,8 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
+#include "Mask.h"
+
 #include <cv.h>
 
 struct PlayerLocation {
@@ -14,10 +16,10 @@ struct PlayerLocation {
 
 class Player {
 private:
+	Mask *pAreaMask;
 	unsigned char trans;
 	unsigned char rot;
 	PlayerLocation locations[256];
-	IplImage *pImgArea;
 public:
 	void update(unsigned char trans, unsigned char rot);
 	unsigned char getTrans();

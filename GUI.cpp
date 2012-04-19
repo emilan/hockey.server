@@ -44,7 +44,7 @@ void draw() {
 	CvScalar colorFinland = cvScalar(255, 255, 255, 255);
 	CvScalar colorSweden = cvScalar(0, 255, 255, 255);
 
-	bool constructive = checkConstructive();
+	bool constructive = limits::checkConstructive();
 	for (int i = 0; i < 2; i++) {
 		Team *pTeam = getTeamById(i);
 		CvScalar teamColor = i == 0 ? colorSweden : colorFinland;

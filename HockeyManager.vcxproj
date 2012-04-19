@@ -75,6 +75,7 @@
   <ItemGroup>
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Limits.cpp" />
+    <ClCompile Include="Mask.cpp" />
     <ClCompile Include="MicroControllers.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PracticalSocket.cpp" />
@@ -93,6 +94,7 @@
   <ItemGroup>
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Limits.h" />
+    <ClInclude Include="Mask.h" />
     <ClInclude Include="MicroControllers.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PracticalSocket.h" />

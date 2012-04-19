@@ -75,6 +75,9 @@
     <ClCompile Include="MicroControllers.cpp">
       <Filter>Source Files\Hockey</Filter>
     </ClCompile>
+    <ClCompile Include="Mask.cpp">
+      <Filter>Source Files\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HockeyManager.h">
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="MicroControllers.h">
       <Filter>Header Files\Hockey</Filter>
+    </ClInclude>
+    <ClInclude Include="Mask.h">
+      <Filter>Header Files\Helpers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
