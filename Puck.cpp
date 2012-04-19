@@ -136,6 +136,7 @@ namespace puckns {
 
 	bool trackingInitialized = false;
 	volatile bool trackingPuck = false;
+	volatile bool doneTracking = false;
 	HANDLE cameraThreadHandle;
 
 	float cameraFrequency;
@@ -143,6 +144,7 @@ namespace puckns {
 using namespace puckns;
 
 unsigned __stdcall cameraThread(void* param) {
+	doneTracking = false;
 	CvPoint2D32f* puckPoint = new CvPoint2D32f();
 	IplImage* frame = cvCreateImage(IMAGESIZE, 8, 3);//skapar en buffer för en bild
 
@@ -163,6 +165,7 @@ unsigned __stdcall cameraThread(void* param) {
 		//uppdaterar puckens position med ny data
 		puck.updatePosition(puckPoint);
 	}
+	doneTracking = true;
 	return NULL;
 }
 
@@ -211,6 +214,8 @@ void startTrackingPuck() {
 void stopTrackingPuck() {
 	if (trackingPuck)
 		trackingPuck = false;
+	while (!doneTracking)
+		Sleep(1);
 }
 
 PuckPosition getPuckPosition() {

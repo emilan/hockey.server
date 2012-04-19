@@ -72,4 +72,6 @@ void calibrateCamera() {
 	pCamCapture->myQueryFrame(frame);//ta ny bild
 	trackGoals(frame);
 	cvReleaseImage(&frame);
+
+	cout << "Camera calibration done!" << endl;
 }
