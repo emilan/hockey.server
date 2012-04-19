@@ -9,6 +9,7 @@ private:
 	int goals;
 public:
 	int getGoals();
+	void goalMade();
 	void update(unsigned char *status);
 	Player *getPlayer(int id);
 };

@@ -11,9 +11,10 @@
 
 using namespace std;
 
-// Class methods
 #define DISTANCETOGOAL	315
 #define PUCKHISTORY		100
+
+// TODO: The structure of Puck.cpp is extremely mixed, using both ns and struct
 
 struct Puck {
 	vector<PuckPosition> history;
@@ -31,6 +32,25 @@ struct Puck {
 	void updatePosition(CvPoint2D32f* point);
 	void addHistory(PuckPosition pos);
 };
+
+namespace puckns {
+	CamCapture *capture;
+	ObjectTracker track_puck;
+	ObjectTracker track_goal1;
+	ObjectTracker track_goal2;
+
+	Puck puck;
+
+	bool trackingInitialized = false;
+	volatile bool trackingPuck = false;
+	volatile bool doneTracking = false;
+	HANDLE cameraThreadHandle;
+	void(*homeGoalMade)(void) = NULL;
+	void(*awayGoalMade)(void) = NULL;
+
+	float cameraFrequency;
+}
+using namespace puckns;
 
 void Puck::addHistory(PuckPosition pos) {
 	WaitForSingleObject(historyMutex, INFINITE);
@@ -101,6 +121,8 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 					if (limits::isOkayHomeGoal()) {
 						homeGoal = true;
 						awayGoal = false;
+						if (homeGoalMade != NULL)
+							homeGoalMade();
 					}
 					else homeGoal = awayGoal = false;
 					goalDetected = true;
@@ -115,6 +137,8 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 					if (limits::isOkayAwayGoal()) {
 						homeGoal = false;
 						awayGoal = true;
+						if (awayGoalMade != NULL)
+							awayGoalMade();
 					}
 					else homeGoal = awayGoal = false;
 					goalDetected = true;
@@ -124,24 +148,6 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 		}
 	}
 }
-
-// Instances, etc.
-namespace puckns {
-	CamCapture *capture;
-	ObjectTracker track_puck;
-	ObjectTracker track_goal1;
-	ObjectTracker track_goal2;
-
-	Puck puck;
-
-	bool trackingInitialized = false;
-	volatile bool trackingPuck = false;
-	volatile bool doneTracking = false;
-	HANDLE cameraThreadHandle;
-
-	float cameraFrequency;
-}
-using namespace puckns;
 
 unsigned __stdcall cameraThread(void* param) {
 	doneTracking = false;
@@ -174,10 +180,13 @@ void trackGoals(IplImage *pFrame) {
 	track_goal2.trackObject(pFrame, &puck.goal2);
 }
 
-bool initializeTracking() {
+bool initializeTracking(void(*homeGoalMade)(void), void(*awayGoalMade)(void)) {
 	if(!trackingInitialized) {
-		capture = new CamCapture();
 		limits::init();
+		puckns::homeGoalMade = homeGoalMade;
+		puckns::awayGoalMade = awayGoalMade;
+
+		capture = new CamCapture();
 		
 		if (!capture->initCam()) {
 			fprintf(stderr, "Could not initialize capturing...\n");

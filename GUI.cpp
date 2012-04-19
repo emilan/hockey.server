@@ -94,6 +94,8 @@ void draw() {
 	if (isAwayGoal())
 		cvPutText(pImg, "<-GOAL", cvPoint(350, 260), &cvFont(3, 3), colorFinland);
 	
+	sprintf_s(buf, "%d - %d", getHomeTeam()->getGoals(), getAwayTeam()->getGoals());
+	cvPutText(pImg, buf, cvPoint(380, 30), &cvFont(2, 2), cvScalar(255, 255, 255, 255));
 
 	cvShowImage("Hockey Server Visualisation", pImg);
 	cvWaitKey(1);

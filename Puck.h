@@ -11,7 +11,7 @@ struct PuckPosition {
 	int y;
 };
 
-bool initializeTracking();
+bool initializeTracking(void(*homeGoalMade)(void), void(*awayGoalMade)(void));
 void startTrackingPuck();
 void stopTrackingPuck();
 

@@ -88,6 +88,14 @@ void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) 
 #endif
 }
 
+void homeGoalMade() {
+	getHomeTeam()->goalMade();
+}
+
+void awayGoalMade() {
+	getAwayTeam()->goalMade();
+}
+
 bool hockeygame::initialize() {
 	cout << "Initializing camera and micro controllers, please be patient..." << endl;
 
@@ -95,7 +103,7 @@ bool hockeygame::initialize() {
 		cout << "Failed reading player positions!" << endl;
 		return false;
 	}
-	else if (!initializeTracking()) {
+	else if (!initializeTracking(homeGoalMade, awayGoalMade)) {
 		cout << "Failed to initialize camera!";
 		return false;
 	}
