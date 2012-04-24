@@ -63,14 +63,14 @@ void calibrateCamera() {
 	cout << "s - save current calibration, go to next" << endl
 		 << "q - cancel current calibration, go to next" << endl;
 
-	CamCapture *pCamCapture = getCamCapture();
-	calibrateCamera(pCamCapture, getPuckTracker(), "puck");
-	calibrateCamera(pCamCapture, getHomeGoalTracker(), "home goal");
-	calibrateCamera(pCamCapture, getAwayGoalTracker(), "away goal");
+	CamCapture *pCamCapture = puck::getCamCapture();
+	calibrateCamera(pCamCapture, puck::getPuckTracker(), "puck");
+	calibrateCamera(pCamCapture, puck::getHomeGoalTracker(), "home goal");
+	calibrateCamera(pCamCapture, puck::getAwayGoalTracker(), "away goal");
 
 	IplImage* frame= cvCreateImage(IMAGESIZE, 8, 3); //skapar minnesplats för bild
 	pCamCapture->myQueryFrame(frame);//ta ny bild
-	trackGoals(frame);
+	puck::trackGoals(frame);
 	cvReleaseImage(&frame);
 
 	cout << "Camera calibration done!" << endl;

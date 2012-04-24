@@ -26,7 +26,7 @@ void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) 
 	Team *pHomeTeam = getHomeTeam();
 	Team *pAwayTeam = getAwayTeam();
 
-	PuckPosition puck = getPuckPosition();
+	puck::Position puck = puck::getPosition();
 	
 	int gametime = getGametime();
 
@@ -103,7 +103,7 @@ bool hockeygame::initialize() {
 		cout << "Failed reading player positions!" << endl;
 		return false;
 	}
-	else if (!initializeTracking(homeGoalMade, awayGoalMade)) {
+	else if (!puck::initializeTracking(homeGoalMade, awayGoalMade)) {
 		cout << "Failed to initialize camera!";
 		return false;
 	}
@@ -175,9 +175,9 @@ void hockeygame::resumeGame(){
 }
 
 void hockeygame::calibrateCamera() {
-	stopTrackingPuck();
+	puck::stopTracking();
 	::calibrateCamera();	// startar bildkalibrerings program
-	startTrackingPuck();
+	puck::startTracking();
 }
 
 void hockeygame::calibrateMicroControllers() {

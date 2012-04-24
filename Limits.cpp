@@ -81,7 +81,7 @@ namespace limits_private {
 // Efter det att pucken är möjlig att nå måste den tävlande snarast uträtta något konstruktivt,
 // dock senast inom 5 sekunder.
 bool limits::checkConstructive() {
-	PuckPosition puckPos = getPuckPosition();
+	puck::Position puckPos = puck::getPosition();
 	unsigned char tmpPlayers[2] = {0, 0};
 	
 	for (int t = 0; t < 2; t++) {
@@ -149,7 +149,7 @@ void limits::init() {
  */
 void limits::update() {
 	if (limits_private::isInvalidGoalOnlyCenterHome || limits_private::isInvalidGoalOnlyCenterAway) {
-		PuckPosition puckPos = getPuckPosition();
+		puck::Position puckPos = puck::getPosition();
 		if ((puckPos.x != 0) && (puckPos.y != 0)) {
 			if (limits_private::isInvalidGoalOnlyCenterHome && 
 				!limits_private::pHomeCenterInvalidGoalMask->contains(puckPos.x, puckPos.y)) {

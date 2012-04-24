@@ -6,30 +6,32 @@
 
 #include "cv.h"
 
-struct PuckPosition {
-	int x;
-	int y;
-};
+namespace puck {
+	struct Position {
+		int x;
+		int y;
+	};
 
-bool initializeTracking(void(*homeGoalMade)(void), void(*awayGoalMade)(void));
-void startTrackingPuck();
-void stopTrackingPuck();
+	bool initializeTracking(void(*homeGoalMade)(void), void(*awayGoalMade)(void));
+	void startTracking();
+	void stopTracking();
 
-ObjectTracker *getPuckTracker();
-ObjectTracker *getHomeGoalTracker();
-ObjectTracker *getAwayGoalTracker();
-CamCapture *getCamCapture();
+	ObjectTracker *getPuckTracker();
+	ObjectTracker *getHomeGoalTracker();
+	ObjectTracker *getAwayGoalTracker();
+	CamCapture *getCamCapture();
 
-PuckPosition getPuckPosition();
-int getPuckHistory(PuckPosition *hist, unsigned int length);
-bool isHomeGoal();
-bool isAwayGoal();
-bool hasPuckPosition();
-void trackGoals(IplImage *pFrame);
+	Position getPosition();
+	int getHistory(Position *hist, unsigned int length);
+	bool isHomeGoal();
+	bool isAwayGoal();
+	bool hasPosition();
+	void trackGoals(IplImage *pFrame);
 
-float getCameraFrequency();
-float getPuckSpeed();
+	float getCameraFrequency();
+	float getSpeed();
 
-#define IMAGESIZE cvSize(744 / 2, 480 / 2)
+	#define IMAGESIZE cvSize(744 / 2, 480 / 2)
+}
 
 #endif //__PUCK_H__

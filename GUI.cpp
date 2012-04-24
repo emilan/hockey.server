@@ -30,15 +30,15 @@ void draw() {
 	}
 	cvCopy(pImgBg, pImg, NULL);
 
-	PuckPosition puck = getPuckPosition();
+	puck::Position puck = puck::getPosition();
 	
 	CvScalar puckColor = cvScalar(0, 255, 0, 255);
 
-	PuckPosition hist[100];
-	int historyLength = getPuckHistory(hist, 100);
+	puck::Position hist[100];
+	int historyLength = puck::getHistory(hist, 100);
 	for (int i = 0; i < historyLength; i++) {
 		int shade = 255 * i / 100;
-		cvCircle(pImg, cvPoint(WINDOWWIDTH / 2 + hist[i].x, WINDOWHEIGHT / 2 + hist[i].y), 11, hasPuckPosition() ? cvScalar(0, shade, 0, 255) : cvScalar(0, 0, shade, 255));
+		cvCircle(pImg, cvPoint(WINDOWWIDTH / 2 + hist[i].x, WINDOWHEIGHT / 2 + hist[i].y), 11, puck::hasPosition() ? cvScalar(0, shade, 0, 255) : cvScalar(0, 0, shade, 255));
 	}
 
 	CvScalar colorFinland = cvScalar(255, 255, 255, 255);
@@ -61,7 +61,7 @@ void draw() {
 				cvPoint(playerCenter.x + playerFaces.x * playerClubLength * cos (rot), 
 						playerCenter.y + playerFaces.y * playerClubLength * sin (rot));
 
-			CvScalar playerColor = hasPuckPosition() && pPlayer->canAccessCoordinate(puck.x, puck.y) ? 
+			CvScalar playerColor = puck::hasPosition() && pPlayer->canAccessCoordinate(puck.x, puck.y) ? 
 				(constructive ? cvScalar(0, 255, 0) : cvScalar(0, 0, 255, 255)) : teamColor;
 
 			cvCircle(pImg, playerCenter, 15, playerColor, 3);
@@ -76,11 +76,11 @@ void draw() {
 	sprintf_s(buf, "MC: %.2f Hz", getMicroControllerFrequency());
 	cvPutText(pImg, buf, cvPoint(0, 30), &cvFont(1), cvScalar(255, 255, 255, 255));
 
-	sprintf_s(buf, "Cam: %.2f Hz", getCameraFrequency());
+	sprintf_s(buf, "Cam: %.2f Hz", puck::getCameraFrequency());
 	cvPutText(pImg, buf, cvPoint(0, 45), &cvFont(1), cvScalar(255, 255, 255, 255));
 
 	static float maxPuckSpeed = 0;
-	float puckSpeed = getPuckSpeed();
+	float puckSpeed = puck::getSpeed();
 	if (puckSpeed > maxPuckSpeed)
 		maxPuckSpeed = puckSpeed;
 	sprintf_s(buf, "Speed: %.2f km/h", puckSpeed);
@@ -89,9 +89,9 @@ void draw() {
 	sprintf_s(buf, "Max: %.2f km/h", maxPuckSpeed);
 	cvPutText(pImg, buf, cvPoint(150, 30), &cvFont(1), cvScalar(255, 255, 255, 255));
 
-	if (isHomeGoal())
+	if (puck::isHomeGoal())
 		cvPutText(pImg, "GOAL->", cvPoint(350, 260), &cvFont(3, 3), colorSweden);
-	if (isAwayGoal())
+	if (puck::isAwayGoal())
 		cvPutText(pImg, "<-GOAL", cvPoint(350, 260), &cvFont(3, 3), colorFinland);
 	
 	sprintf_s(buf, "%d - %d", getHomeTeam()->getGoals(), getAwayTeam()->getGoals());

@@ -14,10 +14,13 @@ using namespace std;
 #define DISTANCETOGOAL	315
 #define PUCKHISTORY		100
 
-// TODO: The structure of Puck.cpp is extremely mixed, using both ns and struct
+namespace puck_private {
+	CamCapture *capture;
+	ObjectTracker track_puck;
+	ObjectTracker track_goal1;
+	ObjectTracker track_goal2;
 
-struct Puck {
-	vector<PuckPosition> history;
+	vector<puck::Position> history;
 	HANDLE historyMutex;
 	bool hasPosition;
 	bool homeGoal;
@@ -27,20 +30,6 @@ struct Puck {
 	CvPoint2D32f goal1;
 	CvPoint2D32f goal2;
 
-	Puck();
-	
-	void updatePosition(CvPoint2D32f* point);
-	void addHistory(PuckPosition pos);
-};
-
-namespace puckns {
-	CamCapture *capture;
-	ObjectTracker track_puck;
-	ObjectTracker track_goal1;
-	ObjectTracker track_goal2;
-
-	Puck puck;
-
 	bool trackingInitialized = false;
 	volatile bool trackingPuck = false;
 	volatile bool doneTracking = false;
@@ -49,10 +38,15 @@ namespace puckns {
 	void(*awayGoalMade)(void) = NULL;
 
 	float cameraFrequency;
-}
-using namespace puckns;
 
-void Puck::addHistory(PuckPosition pos) {
+	void updatePosition(CvPoint2D32f* point);
+	void addHistory(puck::Position pos);
+	unsigned __stdcall cameraThread(void* param);
+}
+
+// private functions
+
+void puck_private::addHistory(puck::Position pos) {
 	WaitForSingleObject(historyMutex, INFINITE);
 	history.push_back(pos);
 	if (history.size() > PUCKHISTORY)
@@ -60,23 +54,11 @@ void Puck::addHistory(PuckPosition pos) {
 	ReleaseMutex(historyMutex);
 }
 
-Puck::Puck() {
-	historyMutex = CreateMutex(NULL, false, "readMutex");
-
-	PuckPosition pos = {0, 0};
-	addHistory(pos);
-		
-	goal1 = cvPoint2D32f(62, 117);	//skapar punkter med målens ungefärliga position
-	goal2 = cvPoint2D32f(324, 116);
-
-	goalDetected = false;
-}
-
-void Puck::updatePosition(CvPoint2D32f* ps){
+void puck_private::updatePosition(CvPoint2D32f* ps){
 	//gör linjär transformation pixelkordinatrer -> millimeter med hjälp utav målens position
 	hasPosition = !(ps->x == 0 && ps->y == 0);
 	if (hasPosition) {
-		PuckPosition pos;
+		puck::Position pos;
  		pos.x = ps->x - (goal1.x + goal2.x) / 2;
 		pos.y = ps->y - (goal1.y + goal2.y) / 2;
 
@@ -104,14 +86,14 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 		if (history.size() >= 2 && !goalDetected) {
 			// TODO: Don't use just two last points (only if it doesn't work)
 			// TODO: Either put something on top of goals or allow detection of puck in goal (because sometimes it succeeds)
-			PuckPosition last = history[history.size() - 1];
+			puck::Position last = history[history.size() - 1];
 			float awayGoallineX = 284;
 			float goallineMinY = -50;
 			float goallineMaxY = 50;
 
 			float homeGoallineX = -284;
 
-			PuckPosition secondLast = history[history.size() - 2];
+			puck::Position secondLast = history[history.size() - 2];
 			// Between center of field and finnish goal line and moving towards finnish goal
 			if (last.x < awayGoallineX && last.x > 0 && secondLast.x < last.x) {
 				// y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
@@ -149,7 +131,7 @@ void Puck::updatePosition(CvPoint2D32f* ps){
 	}
 }
 
-unsigned __stdcall cameraThread(void* param) {
+unsigned __stdcall puck_private::cameraThread(void* param) {
 	doneTracking = false;
 	CvPoint2D32f* puckPoint = new CvPoint2D32f();
 	IplImage* frame = cvCreateImage(IMAGESIZE, 8, 3);//skapar en buffer för en bild
@@ -169,116 +151,128 @@ unsigned __stdcall cameraThread(void* param) {
 		//hanterar bilden
 		track_puck.trackObject(frame, puckPoint);//20ms
 		//uppdaterar puckens position med ny data
-		puck.updatePosition(puckPoint);
+		updatePosition(puckPoint);
 	}
 	doneTracking = true;
 	return NULL;
 }
 
-void trackGoals(IplImage *pFrame) {
-	track_goal1.trackObject(pFrame, &puck.goal1);	//hittar målens position
-	track_goal2.trackObject(pFrame, &puck.goal2);
+// public functions
+
+void puck::trackGoals(IplImage *pFrame) {
+	puck_private::track_goal1.trackObject(pFrame, &puck_private::goal1);	//hittar målens position
+	puck_private::track_goal2.trackObject(pFrame, &puck_private::goal2);
 }
 
-bool initializeTracking(void(*homeGoalMade)(void), void(*awayGoalMade)(void)) {
-	if(!trackingInitialized) {
+bool puck::initializeTracking(void(*homeGoalMade)(void), void(*awayGoalMade)(void)) {
+	if(!puck_private::trackingInitialized) {
 		limits::init();
-		puckns::homeGoalMade = homeGoalMade;
-		puckns::awayGoalMade = awayGoalMade;
+		puck_private::homeGoalMade = homeGoalMade;
+		puck_private::awayGoalMade = awayGoalMade;
+		puck_private::historyMutex = CreateMutex(NULL, false, "readMutex");
 
-		capture = new CamCapture();
+		puck::Position pos = {0, 0};
+		puck_private::addHistory(pos);
 		
-		if (!capture->initCam()) {
+		puck_private::goal1 = cvPoint2D32f(62, 117);	//skapar punkter med målens ungefärliga position
+		puck_private::goal2 = cvPoint2D32f(324, 116);
+
+		puck_private::goalDetected = false;
+
+
+		puck_private::capture = new CamCapture();
+		
+		if (!puck_private::capture->initCam()) {
 			fprintf(stderr, "Could not initialize capturing...\n");
 			return false;
 		}
 		try {
 			/*skapar ett bildbehandlings objekt somletar efter grönt på spelplanen, se Objecttracker.cpp*/
-			track_puck = ObjectTracker(cvLoadImage("playField.bmp", 0), "green");
-			track_goal1 = ObjectTracker(cvLoadImage("goal1.bmp", 0), "goal1");	//object som letar efter ena målet
-			track_goal2 = ObjectTracker(cvLoadImage("goal2.bmp", 0), "goal2");	//object som letar efter andra målet
+			puck_private::track_puck = ObjectTracker(cvLoadImage("playField.bmp", 0), "green");
+			puck_private::track_goal1 = ObjectTracker(cvLoadImage("goal1.bmp", 0), "goal1");	//object som letar efter ena målet
+			puck_private::track_goal2 = ObjectTracker(cvLoadImage("goal2.bmp", 0), "goal2");	//object som letar efter andra målet
 		} catch(exception e) {
 			cout << "no mask or color information" << endl;
 			return false;
 		}
-		trackingInitialized=true;
+		puck_private::trackingInitialized=true;
 
 		//tar en bild och använder den för att skapa en puckrepresentation
 		IplImage* frame = cvCreateImage(IMAGESIZE, 8, 3);
-		capture->myQueryFrame(frame);
+		puck_private::capture->myQueryFrame(frame);
 		trackGoals(frame);
 		
-		startTrackingPuck();
+		puck::startTracking();
 	}
 	return true;
 }
 
-void startTrackingPuck() {
-	if (!trackingPuck) {
-		trackingPuck = true;
-		_beginthreadex(NULL, 0, cameraThread, NULL, 0, NULL);
+void puck::startTracking() {
+	if (!puck_private::trackingPuck) {
+		puck_private::trackingPuck = true;
+		_beginthreadex(NULL, 0, puck_private::cameraThread, NULL, 0, NULL);
 	}
 }
 
-void stopTrackingPuck() {
-	if (trackingPuck)
-		trackingPuck = false;
-	while (!doneTracking)
+void puck::stopTracking() {
+	if (puck_private::trackingPuck)
+		puck_private::trackingPuck = false;
+	while (!puck_private::doneTracking)
 		Sleep(1);
 }
 
-PuckPosition getPuckPosition() {
-	WaitForSingleObject(puck.historyMutex, INFINITE);
-	PuckPosition pos = puck.history.back();
-	ReleaseMutex(puck.historyMutex);
+puck::Position puck::getPosition() {
+	WaitForSingleObject(puck_private::historyMutex, INFINITE);
+	puck::Position pos = puck_private::history.back();
+	ReleaseMutex(puck_private::historyMutex);
 	return pos;
 }
 
-int getPuckHistory(PuckPosition *hist, unsigned int length) {
-	WaitForSingleObject(puck.historyMutex, INFINITE);
-	int c = min(puck.history.size(), length);
+int puck::getHistory(puck::Position *hist, unsigned int length) {
+	WaitForSingleObject(puck_private::historyMutex, INFINITE);
+	int c = min(puck_private::history.size(), length);
 	for (int i = 0; i < c; i++)
-		memcpy(hist + i, &puck.history[i], sizeof(PuckPosition)); 
-	ReleaseMutex(puck.historyMutex);
+		memcpy(hist + i, &puck_private::history[i], sizeof(puck::Position)); 
+	ReleaseMutex(puck_private::historyMutex);
 	return c;
 }
 
-ObjectTracker *getPuckTracker() {
-	return &track_puck;
+ObjectTracker *puck::getPuckTracker() {
+	return &puck_private::track_puck;
 }
 
-ObjectTracker *getHomeGoalTracker() {
-	return &track_goal1;
+ObjectTracker *puck::getHomeGoalTracker() {
+	return &puck_private::track_goal1;
 }
 
-ObjectTracker *getAwayGoalTracker() {
-	return &track_goal2;
+ObjectTracker *puck::getAwayGoalTracker() {
+	return &puck_private::track_goal2;
 }
 
-CamCapture *getCamCapture() {
-	return capture;
+CamCapture *puck::getCamCapture() {
+	return puck_private::capture;
 }
 
-float getCameraFrequency() {
-	return cameraFrequency;
+float puck::getCameraFrequency() {
+	return puck_private::cameraFrequency;
 }
 
-bool isHomeGoal() {
-	return puck.homeGoal;
+bool puck::isHomeGoal() {
+	return puck_private::homeGoal;
 }
 
-bool isAwayGoal() {
-	return puck.awayGoal;
+bool puck::isAwayGoal() {
+	return puck_private::awayGoal;
 }
 
-bool hasPuckPosition() {
-	return puck.hasPosition;
+bool puck::hasPosition() {
+	return puck_private::hasPosition;
 }
 
-float getPuckSpeed() {
-	if (puck.history.size() >= 2) {
-		PuckPosition last = puck.history[puck.history.size() - 1];
-		PuckPosition secondLast = puck.history[puck.history.size() - 2];
+float puck::getSpeed() {
+	if (puck_private::history.size() >= 2) {
+		puck::Position last = puck_private::history[puck_private::history.size() - 1];
+		puck::Position secondLast = puck_private::history[puck_private::history.size() - 2];
 
 		float dx = last.x - secondLast.x;
 		float dy = last.y - secondLast.y;
