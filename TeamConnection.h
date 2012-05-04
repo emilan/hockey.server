@@ -30,6 +30,8 @@ public:
 	~TeamConnection();
 };
 
+void acquireTeamConnections();
+void releaseTeamConnections();
 TeamConnection* getHomeTeamConnection();
 TeamConnection* getAwayTeamConnection();
 

@@ -16,27 +16,27 @@ bool running = false;
 bool paused = false;
 
 void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) {
-	const int MESSAGELENGTH=29;
-	int homeMessage[MESSAGELENGTH];
-	int awayMessage[MESSAGELENGTH];
-
-	TeamConnection *pHomeTeamConnection = getHomeTeamConnection();
-	TeamConnection *pAwayTeamConnection = getAwayTeamConnection();
-
 	Team *pHomeTeam = getHomeTeam();
 	Team *pAwayTeam = getAwayTeam();
 
-	puck::Position puck = puck::getPosition();
-	
-	int gametime = getGametime();
-
 	// Update teams
-	getHomeTeam()->update(homeStatus);
-	getAwayTeam()->update(awayStatus);
+	pHomeTeam->update(homeStatus);
+	pAwayTeam->update(awayStatus);
 
+	acquireTeamConnections();
+	TeamConnection *pHomeTeamConnection = getHomeTeamConnection();
+	TeamConnection *pAwayTeamConnection = getAwayTeamConnection();
 	// Send new state to AI
 	if ((pHomeTeamConnection != NULL) && 
-		(pAwayTeamConnection != NULL)) {
+		(pAwayTeamConnection != NULL)) 
+	{
+		const int MESSAGELENGTH=29;
+		int homeMessage[MESSAGELENGTH];
+		int awayMessage[MESSAGELENGTH];
+	
+		puck::Position puck = puck::getPosition();
+		int gametime = getGametime();
+
 		int index=0;
 		awayMessage[index]   = pAwayTeam->getGoals();
 		homeMessage[index++] = pHomeTeam->getGoals();
@@ -66,6 +66,7 @@ void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) 
 		pHomeTeamConnection->send(homeMessage, MESSAGELENGTH);
 		pAwayTeamConnection->send(awayMessage, MESSAGELENGTH);
 	}
+	releaseTeamConnections();
 
 // DEBUG log measurements
 #ifdef DEBUG

@@ -74,6 +74,9 @@ namespace teamconnectionns {
 	HANDLE networkReceiverThreadHandle;
 	HANDLE clientsAliveThreadHandle;
 
+	HANDLE checkClientsSemaphore = NULL;
+	HANDLE teamConnectionsMutex = NULL;
+
 	void(*homeCommandsReceived)(char *, int) = NULL;
 	void(*awayCommandsReceived)(char *, int) = NULL;
 
@@ -95,6 +98,14 @@ TeamConnection* getHomeTeamConnection() {
 
 TeamConnection* getAwayTeamConnection() {
 	return awayTeamConnection;
+}
+
+void acquireTeamConnections() {
+	WaitForSingleObject(teamConnectionsMutex, INFINITE);
+}
+
+void releaseTeamConnections() {
+	ReleaseMutex(teamConnectionsMutex);
 }
 
 unsigned __stdcall networkReceiverThread(void *param) {
@@ -190,14 +201,19 @@ bool checkClient(TeamConnection *pTeam) {
 }
 
 unsigned __stdcall checkClientsProc(void *param) {
-	void(*stopFunction)(void) = (void(*)(void))param;
-
+	DWORD dwRes = WaitForSingleObject(checkClientsSemaphore, INFINITE);
+	bool doStop = false;
 	while (listening) {
-		if (!checkClient(homeTeamConnection))
-			stopFunction();
-		else if (!checkClient(awayTeamConnection))
-			stopFunction();
+		if (!checkClient(homeTeamConnection) || !checkClient(awayTeamConnection)) {
+			doStop = true;
+			break;
+		}
 		Sleep(10000);
+	}
+	BOOL bRes = ReleaseSemaphore(checkClientsSemaphore, 1, NULL);
+	if (doStop) {
+		void(*stopFunction)(void) = (void(*)(void))param;
+		stopFunction();
 	}
 	return 0;
 }
@@ -207,6 +223,10 @@ bool setUpConnections(void(*stopFunction)(void),
 	void(*homeCmdsReceived)(char *msg, int length), 
 	void(*awayCmdsReceived)(char *msg, int length))
 {
+	if (checkClientsSemaphore == NULL)
+		checkClientsSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
+	if (teamConnectionsMutex == NULL)
+		teamConnectionsMutex = CreateMutex(NULL, FALSE, NULL);
 	if (homeTeamConnection==NULL || awayTeamConnection==NULL) {
 		listeningSocket = new UDPSocket(PORT); // objekt för udp-kommunikation
 
@@ -258,9 +278,12 @@ void resumeListening() {
 
 void stopListening() {
 	listening = false;
+	WaitForSingleObject(checkClientsSemaphore, INFINITE);
+	
 	// TODO: Is this really the best/safest way?
 	TerminateThread(networkReceiverThreadHandle, 0);
-
+	
+	acquireTeamConnections();
 	if (homeTeamConnection != NULL) {
 		delete homeTeamConnection;
 		homeTeamConnection = NULL;
@@ -273,4 +296,6 @@ void stopListening() {
 		delete listeningSocket;
 		listeningSocket = NULL;
 	}
+	releaseTeamConnections();
+	ReleaseSemaphore(checkClientsSemaphore, 1, NULL);
 }
