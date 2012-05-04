@@ -6,7 +6,7 @@ using namespace std;
 SerialConnection::SerialConnection(char* arg):Serial(arg){
 
 	readMutex=CreateMutex(NULL,false,_T("readMutex"));
-	writeMutex=CreateMutex(NULL,false,_T("readMutex"));
+	writeMutex=CreateMutex(NULL,false,_T("writeMutex"));
 	inBufLength=0;
 	outBufLength=0;
 	inBuf;//=new char[256];
@@ -35,10 +35,10 @@ void SerialConnection::communicate(){
 		WriteData(inBuf,inBufLength);//skriv meddelande	som fås av recieverThread
 		//inBuf;									
 		inBufLength=0;	
-		ReleaseMutex(readMutex);//utanför syncning
+		ReleaseMutex(writeMutex);//utanför syncning
 						
 
-		Sleep(10);//väntar på att mikrokontrollern ska färdigställa sin cykel, se Rapport, mikrokontroller
+		Sleep(16);//väntar på att mikrokontrollern ska färdigställa sin cykel, se Rapport, mikrokontroller
 		
 		WaitForSingleObject(readMutex,INFINITE);	//Sychronized section
 		outBufLength=ReadData(outBuf,MAXBUF);//läser in meddelande från mikrokontroller
@@ -56,10 +56,11 @@ void SerialConnection::communicate(){
 
 void SerialConnection::write(char *com, int length, char *_mode){//sätter vd som skall skickas till mikrokontrollern
 	// DEBUG
+	/*
 	for(int i = 0; i < length; i++){
 		cout << (int)(i % 5 == 3 ? (signed char)com[i] : (unsigned char)com[i]) << "\t";
 	}
-	cout<<endl;
+	cout<<endl;*/
 
 	WaitForSingleObject(writeMutex, INFINITE);	//Sychronized section
 	mode = _mode;								//

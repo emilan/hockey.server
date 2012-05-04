@@ -5,7 +5,7 @@
 
 #ifndef SERIALCONNECTION
 #define SERIALCONNECTION
-#define MAXBUF 24
+#define MAXBUF 30
 
 class SerialConnection:Serial{
 	
