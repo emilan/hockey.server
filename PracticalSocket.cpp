@@ -327,9 +327,10 @@ void UDPSocket::sendTo(const void *buffer, int bufferLen,
   sockaddr_in destAddr;
   fillAddr(foreignAddress, foreignPort, destAddr);
 
+  int ires = sendto(sockDesc, (raw_type *) buffer, bufferLen, 0,
+             (sockaddr *) &destAddr, sizeof(destAddr));
   // Write out the whole buffer as a single message.
-  if (sendto(sockDesc, (raw_type *) buffer, bufferLen, 0,
-             (sockaddr *) &destAddr, sizeof(destAddr)) != bufferLen) {
+  if (ires != bufferLen) {
     throw SocketException("Send failed (sendto())", true);
   }
 }
