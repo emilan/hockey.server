@@ -5,8 +5,8 @@
 using namespace std;
 SerialConnection::SerialConnection(char* arg):Serial(arg){
 
-	readMutex=CreateMutex(NULL,false,_T("readMutex"));
-	writeMutex=CreateMutex(NULL,false,_T("writeMutex"));
+	readMutex=CreateMutex(NULL, FALSE, NULL);
+	writeMutex=CreateMutex(NULL, FALSE, NULL);
 	inBufLength=0;
 	outBufLength=0;
 	inBuf;//=new char[256];

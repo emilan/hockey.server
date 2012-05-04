@@ -169,7 +169,7 @@ bool puck::initializeTracking(void(*homeGoalMade)(void), void(*awayGoalMade)(voi
 		limits::init();
 		puck_private::homeGoalMade = homeGoalMade;
 		puck_private::awayGoalMade = awayGoalMade;
-		puck_private::historyMutex = CreateMutex(NULL, false, "readMutex");
+		puck_private::historyMutex = CreateMutex(NULL, FALSE, NULL);
 
 		puck::Position pos = {0, 0};
 		puck_private::addHistory(pos);
