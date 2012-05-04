@@ -27,7 +27,7 @@ void TeamConnection::send(int *toSend, const int bufLength){ //skickar speltills
 
 	for (int i=0; i<bufLength; i++) { //dekonstruerar ett intfält till ett charfält
 		int x = toSend[i];
-		int j = i << 2;
+		int j = i * 4;
 
 		msg[j++] = (unsigned char) ((x >> 0) & 0xff);  // läser en byte i taget i varje int
 		msg[j++] = (unsigned char) ((x >> 8) & 0xff);
@@ -112,10 +112,12 @@ unsigned __stdcall networkReceiverThread(void *param) {
 	char buf[BUFLENGTH];	 // läst meddelande
 	char msg[BUFLENGTH/4+1]; // formaterat medelande
 	char err[BUFLENGTH/4+1]; // formaterat svar, misslyckade kommandon
-
+	
+	/*
 	ofstream myfile = ofstream();	// DEBUGVERKTYG
 	myfile.open ("commands.txt");	// öpnnar fil där kommandon sparas
-	
+	*/
+
 	// TODO: These shouldn't be here!
 	//pHomeSerial->write(NULL, 0);		// slutar kalibrara mikrokontrollerna när spelet börjar
 	//pAwaySerial->write(NULL, 0);
@@ -133,25 +135,25 @@ unsigned __stdcall networkReceiverThread(void *param) {
 				int errIndex = 0;
 				int cmdIndex = 0;
 				for (int cmdIndex = 0; cmdIndex < rcvBytes / 5 / 4; cmdIndex++) {
-					myfile << getGametime() << "\t";	//sparar speltiden när kommandot mottogs
+					//myfile << getGametime() << "\t";	//sparar speltiden när kommandot mottogs
 
 					char cmd[5];
 					for (int i = 0; i < 5; i++) {		//läser intfält som ett charfält av kommandon
 						cmd[i] = buf[cmdIndex * 5 * 4 + i * 4];
-						myfile << (int)(i == 3 ? (signed char)msg[i] : (unsigned char)msg[i]) << "\t";
+						//myfile << (int)(i == 3 ? (signed char)msg[i] : (unsigned char)msg[i]) << "\t";
 					}
 					// one command should now be in msg
 					if (limits::isCommandOkay(teamC == homeTeamConnection ? 0 : 1, cmd)) {
 						memcpy(msg + index, cmd, 5);
 						index += 5;
-						myfile << "+";
+						//myfile << "+";
 					}
 					else {
 						memcpy(err + errIndex, cmd, 5);
 						errIndex += 5;
-						myfile << "-";
+						//myfile << "-";
 					}
-					myfile<<endl;
+					//myfile<<endl;
 				}
 
 				if (errIndex > 0) {
@@ -193,7 +195,7 @@ unsigned __stdcall checkClientsProc(void *param) {
 	while (listening) {
 		if (!checkClient(homeTeamConnection))
 			stopFunction();
-		if (!checkClient(awayTeamConnection))
+		else if (!checkClient(awayTeamConnection))
 			stopFunction();
 		Sleep(10000);
 	}
