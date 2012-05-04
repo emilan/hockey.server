@@ -270,6 +270,8 @@ bool puck::hasPosition() {
 }
 
 float puck::getSpeed() {
+	float res = 0;
+	WaitForSingleObject(puck_private::historyMutex, INFINITE);
 	if (puck_private::history.size() >= 2) {
 		puck::Position last = puck_private::history[puck_private::history.size() - 1];
 		puck::Position secondLast = puck_private::history[puck_private::history.size() - 2];
@@ -280,7 +282,8 @@ float puck::getSpeed() {
 		float length = sqrt(dx * dx + dy * dy);
 		float freq = getCameraFrequency();
 
-		return length * freq / 1000000 * 3600;
+		res = length * freq / 1000000 * 3600;
 	}
-	return 0;
+	ReleaseMutex(puck_private::historyMutex);
+	return res;
 }
