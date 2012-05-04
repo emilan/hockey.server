@@ -63,13 +63,13 @@ void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) 
 			homeMessage[index++] = (awayStatus[i] & 0xff);
 		}
 
-		pHomeTeamConnection->send(awayMessage, MESSAGELENGTH);
-		pAwayTeamConnection->send(homeMessage, MESSAGELENGTH);
+		pHomeTeamConnection->send(homeMessage, MESSAGELENGTH);
+		pAwayTeamConnection->send(awayMessage, MESSAGELENGTH);
 	}
 
 // DEBUG log measurements
 #ifdef DEBUG
-	static ofstream measurementsLog = ofstream();
+	/*static ofstream measurementsLog = ofstream();
 	static bool measurementsLogInitialized = false;
 	if (!measurementsLogInitialized) {
 		measurementsLog.open("measurements.txt");
@@ -84,7 +84,7 @@ void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) 
 	for (int i=0;i<12;i++)
 		measurementsLog << (int)awayStatus[i] << "\t";	
 
-	measurementsLog << endl;
+	measurementsLog << endl;*/
 #endif
 }
 
