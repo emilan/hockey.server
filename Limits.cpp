@@ -67,8 +67,8 @@ bool limits_private::isCommandOkayMaxInMovement(int teamId, char *cmd) {
 }
 
 bool limits::isCommandOkay(int teamId, char *cmd) {
-	if (!limits_private::isCommandOkayMaxInMovement(teamId, cmd))
-		return false;
+	/*if (!limits_private::isCommandOkayMaxInMovement(teamId, cmd))
+		return false;*/
 	return true;
 }
 
