@@ -31,6 +31,8 @@ namespace puck {
 	float getCameraFrequency();
 	float getSpeed();
 
+	void toggleCamera();
+
 	#define IMAGESIZE cvSize(744 / 2, 480 / 2)
 }
 

@@ -42,6 +42,10 @@ namespace puck_private {
 	void updatePosition(CvPoint2D32f* point);
 	void addHistory(puck::Position pos);
 	unsigned __stdcall cameraThread(void* param);
+
+	bool cameraVisible = false;
+	void camera_mouse_callback(int event, int x, int y, int flags, void* param);
+	puck::Position translateCoordinates(int x, int y);
 }
 
 // private functions
@@ -58,25 +62,7 @@ void puck_private::updatePosition(CvPoint2D32f* ps){
 	//gör linjär transformation pixelkordinatrer -> millimeter med hjälp utav målens position
 	hasPosition = !(ps->x == 0 && ps->y == 0);
 	if (hasPosition) {
-		puck::Position pos;
- 		pos.x = ps->x - (goal1.x + goal2.x) / 2;
-		pos.y = ps->y - (goal1.y + goal2.y) / 2;
-
-		float v1x = goal2.x - goal1.x;
-		float v1y = goal2.y - goal1.y; 
-		float v2x = v1y;
-		float v2y = -v1x;
-		float norm = sqrt(v1x * v1x + v1y * v1y);
-
-		v1x = v1x / norm;
-		v1y = v1y / norm;
-		v2x = v2x / norm;
-		v2y = v2y / norm;
-		pos.x = v1x * pos.x + v1y * pos.y;
-		pos.y = v2x * pos.x + v2y * pos.y;
-		pos.x *= 2 * DISTANCETOGOAL / norm;
-		pos.y *= 2 * DISTANCETOGOAL / norm;
-
+		puck::Position pos = translateCoordinates(ps->x, ps->y);
 		addHistory(pos);
 		homeGoal = awayGoal = goalDetected = false;
 
@@ -131,6 +117,49 @@ void puck_private::updatePosition(CvPoint2D32f* ps){
 	}
 }
 
+puck::Position puck_private::translateCoordinates(int x, int y) {
+	puck::Position pos;
+	pos.x = x - (puck_private::goal1.x + puck_private::goal2.x) / 2;
+	pos.y = y - (puck_private::goal1.y + puck_private::goal2.y) / 2;
+
+	float v1x = puck_private::goal2.x - puck_private::goal1.x;
+	float v1y = puck_private::goal2.y - puck_private::goal1.y; 
+	float v2x = v1y;
+	float v2y = -v1x;
+	float norm = sqrt(v1x * v1x + v1y * v1y);
+
+	v1x = v1x / norm;
+	v1y = v1y / norm;
+	v2x = v2x / norm;
+	v2y = v2y / norm;
+	pos.x = v1x * pos.x + v1y * pos.y;
+	pos.y = v2x * pos.x + v2y * pos.y;
+	pos.x *= 2 * DISTANCETOGOAL / norm;
+	pos.y *= 2 * DISTANCETOGOAL / norm;
+	return pos;
+}
+
+void puck_private::camera_mouse_callback(int event, int x, int y, int flags, void* param) {
+	switch( event ){
+		case CV_EVENT_MOUSEMOVE: 
+			break;
+
+		case CV_EVENT_LBUTTONDOWN:
+			break;
+
+		case CV_EVENT_LBUTTONUP:
+			puck::Position pos = translateCoordinates(x, y);
+			cout << pos.x << "," << pos.y << endl;
+			break;
+	}
+}
+
+void puck::toggleCamera() {
+	puck_private::cameraVisible = !puck_private::cameraVisible;
+	if (!puck_private::cameraVisible) 
+		cvDestroyWindow("camera");
+}
+
 unsigned __stdcall puck_private::cameraThread(void* param) {
 	doneTracking = false;
 	CvPoint2D32f* puckPoint = new CvPoint2D32f();
@@ -148,6 +177,11 @@ unsigned __stdcall puck_private::cameraThread(void* param) {
 
 		//fyller buffren med en ny bild
 		capture->myQueryFrame(frame); //40ms
+		if (puck_private::cameraVisible) {
+			cvShowImage("camera", frame);
+			cvSetMouseCallback("camera", puck_private::camera_mouse_callback);
+			cvWaitKey(1);
+		}
 		//hanterar bilden
 		track_puck.trackObject(frame, puckPoint);//20ms
 		//uppdaterar puckens position med ny data

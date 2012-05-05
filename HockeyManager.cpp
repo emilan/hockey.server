@@ -1,6 +1,7 @@
 #include "HockeyManager.h"
 #include "HockeyGame.h"
 #include "Limits.h"
+#include "Puck.h"
 
 #include <iostream>
 #include <conio.h>
@@ -50,6 +51,9 @@ int main() {
 		case 'c':
 			hockeygame::calibrateMicroControllers();
 			break;
+		case 'm':
+			puck::toggleCamera();
+			break;
 		default:
 			;
 		}
@@ -65,6 +69,7 @@ void showHelp() {
 		 << "c - calibrate microcontrollers" << endl
 		 << "a - calibrate image processing" << endl
 		 << "f - face off" << endl	// TODO: Automatic?
+		 << "m - toggle camera" << endl
 		 ;
 }
 
