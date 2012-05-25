@@ -22,6 +22,7 @@ namespace limits_private {
 
 	void removePlayerCommands(int teamId, int playerId);
 	bool isCommandOkayMaxInMovement(int teamId, char *cmd);
+	bool rejectAll = true;
 }
 
 void limits_private::removePlayerCommands(int teamId, int playerId) {
@@ -67,6 +68,8 @@ bool limits_private::isCommandOkayMaxInMovement(int teamId, char *cmd) {
 }
 
 bool limits::isCommandOkay(int teamId, char *cmd) {
+	if (limits_private::rejectAll)
+		return false;
 	/*if (!limits_private::isCommandOkayMaxInMovement(teamId, cmd))
 		return false;*/
 	return true;
@@ -194,4 +197,8 @@ bool limits::isOkayAwayGoal() {
 		return false;
 	}
 	return limits_private::isOkayGoalWithinThreeSeconds();
+}
+
+void limits::toggleRejectAllCommands() {
+	limits_private::rejectAll = !limits_private::rejectAll;
 }

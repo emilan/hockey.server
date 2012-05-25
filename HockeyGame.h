@@ -9,6 +9,7 @@ namespace hockeygame {
 	void resumeGame();
 	void calibrateCamera();
 	void calibrateMicroControllers();
+	void faceOff();
 }
 
 #endif //__HOCKEYGAME_H__

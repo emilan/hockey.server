@@ -6,6 +6,7 @@
 #include "Team.h"
 #include "MicroControllers.h"
 #include "CameraCalibration.h"
+#include "Limits.h"
 
 #include <iostream>		// For console output
 #include <fstream>		// For logging to file (measurements.txt)
@@ -130,8 +131,8 @@ bool hockeygame::startGame() {
 		
 		cout << "successfully started game" << endl;
 		startGametime();//definieras i Gametime.cpp
+		pauseGametime();
 		//starts the threads
-		resumeGame();
 		
 	}
 	else cout << "can't start: game already running" << endl;
@@ -152,9 +153,7 @@ void hockeygame::pauseGame(){ //pausa spelet
 	if (running && !paused) {
 		paused=true;
 		pauseGametime();
-		pauseListening();
-
-		// TODO: Unregister sending
+		limits::toggleRejectAllCommands();
 
 		cout << "paused" << endl;
 	}
@@ -165,9 +164,7 @@ void hockeygame::resumeGame(){
 	if(running&&paused){
 		paused=false;
 		resumeGametime();
-		resumeListening();
-
-		// TODO: Reregister for sending
+		limits::toggleRejectAllCommands();
 
 		cout << "resumed" << endl;
 	}else{
@@ -183,4 +180,12 @@ void hockeygame::calibrateCamera() {
 
 void hockeygame::calibrateMicroControllers() {
 	::calibrateMicroControllers();
+}
+
+void hockeygame::faceOff() {
+	if (paused) {
+		hockeygame::resumeGame();
+		limits::faceOff();
+	}
+	else cout << "face off must be done from paused state" << endl;
 }

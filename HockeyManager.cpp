@@ -1,6 +1,5 @@
 #include "HockeyManager.h"
 #include "HockeyGame.h"
-#include "Limits.h"
 #include "Puck.h"
 
 #include <iostream>
@@ -36,7 +35,7 @@ int main() {
 			break;
 		case 'f':
 			cout << "face off!" << endl;
-			limits::faceOff();
+			hockeygame::faceOff();
 			break;
 		case 'q':
 			quit = true;	// avslutar loopen

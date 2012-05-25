@@ -9,6 +9,7 @@ namespace limits {
 	void update();
 	void init();
 	void faceOff();	// TODO: When to call faceOff? Manual? Automatic (how?)?
+	void toggleRejectAllCommands();
 }
 
 #endif //__LIMITS_H__

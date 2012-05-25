@@ -38,8 +38,6 @@ TeamConnection* getAwayTeamConnection();
 bool setUpConnections(void(*stopFunction)(void), 
 	void(*homeCmdsReceived)(char *msg, int length), 
 	void(*awayCmdsReceived)(char *msg, int length));
-void pauseListening();
 void stopListening();
-void resumeListening();
 
 #endif //__TEAM_CONNECTION_H__

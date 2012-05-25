@@ -259,21 +259,11 @@ bool setUpConnections(void(*stopFunction)(void),
 		homeCommandsReceived = homeCmdsReceived;
 		awayCommandsReceived = awayCmdsReceived;
 
-		networkReceiverThreadHandle = (HANDLE)_beginthreadex(NULL, 0, networkReceiverThread, NULL, CREATE_SUSPENDED, NULL);
-		clientsAliveThreadHandle = (HANDLE)_beginthreadex(NULL, 0, checkClientsProc, (void*)stopFunction, CREATE_SUSPENDED, NULL);
+		listening = true;
+		networkReceiverThreadHandle = (HANDLE)_beginthreadex(NULL, 0, networkReceiverThread, NULL, 0, NULL);
+		clientsAliveThreadHandle = (HANDLE)_beginthreadex(NULL, 0, checkClientsProc, (void*)stopFunction, 0, NULL);
 	}
 	return true;
-}
-
-void pauseListening() {
-	SuspendThread(networkReceiverThreadHandle);
-	SuspendThread(clientsAliveThreadHandle);
-}
-
-void resumeListening() {
-	listening = true;
-	ResumeThread(networkReceiverThreadHandle);
-	ResumeThread(clientsAliveThreadHandle);
 }
 
 void stopListening() {
