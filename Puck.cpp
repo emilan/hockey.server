@@ -96,6 +96,7 @@ void puck_private::updatePosition(CvPoint2D32f* ps){
 					else homeGoal = awayGoal = false;
 					goalDetected = true;
 					hockeygame::pauseGame();	// TODO: Perhaps a bit beyond my principles of modularity... Should be in some kind of goal event...
+					
 				}
 				else homeGoal = awayGoal = false;
 			}

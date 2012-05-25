@@ -92,10 +92,46 @@ void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) 
 
 void homeGoalMade() {
 	getHomeTeam()->goalMade();
+	char homeCommands[30];
+	for (int i = 0; i < 6; i++) {
+		homeCommands[i * 5 + 0] = i;
+		homeCommands[i * 5 + 1] = 100;
+		homeCommands[i * 5 + 2] = 50;
+		homeCommands[i * 5 + 3] = 127;
+		homeCommands[i * 5 + 4] = 0;
+	}
+	char awayCommands[30];
+	for (int i = 0; i < 6; i++) {
+		awayCommands[i * 5 + 0] = i;
+		awayCommands[i * 5 + 1] = 100;
+		awayCommands[i * 5 + 2] = 10;
+		awayCommands[i * 5 + 3] = 0;
+		awayCommands[i * 5 + 4] = 0;
+	}
+	sendCommandsToHomeMicroController(homeCommands, 30);
+	sendCommandsToAwayMicroController(awayCommands, 30);
 }
 
 void awayGoalMade() {
 	getAwayTeam()->goalMade();
+	char awayCommands[30];
+	for (int i = 0; i < 6; i++) {
+		awayCommands[i * 5 + 0] = i;
+		awayCommands[i * 5 + 1] = 100;
+		awayCommands[i * 5 + 2] = 50;
+		awayCommands[i * 5 + 3] = 127;
+		awayCommands[i * 5 + 4] = 0;
+	}
+	char homeCommands[30];
+	for (int i = 0; i < 6; i++) {
+		homeCommands[i * 5 + 0] = i;
+		homeCommands[i * 5 + 1] = 100;
+		homeCommands[i * 5 + 2] = 10;
+		homeCommands[i * 5 + 3] = 0;
+		homeCommands[i * 5 + 4] = 0;
+	}
+	sendCommandsToHomeMicroController(homeCommands, 30);
+	sendCommandsToAwayMicroController(awayCommands, 30);
 }
 
 bool hockeygame::initialize() {

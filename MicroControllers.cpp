@@ -30,7 +30,7 @@ unsigned __stdcall microControllerReadThread(void* param) {
 			tOld = tNew;
 			counter = 0;
 		}
-		Sleep(10);
+		Sleep(16);
 
 		homeSerial->read((char *)homeStatus);
 		awaySerial->read((char *)awayStatus);
@@ -59,14 +59,14 @@ bool initializeMicroControllers(void(*newDataFunction)(unsigned char*, unsigned 
 }
 
 void calibrateMicroControllers() {
+	cout << "In order to start automatic calibration, you need to turn every player" << endl;
+	cout << "such that he faces foward." << endl;
+	system("pause");
 	homeSerial->write(NULL, 0, "a");
 	awaySerial->write(NULL, 0, "a");
 	cout << "Automatic calibration has been initialized." << endl;
-	cout << "When it finishes, turn every player so that he faces forward." << endl;
-	cout << "Press any key when done to save calibration in the microcontrollers." << endl;
+	cout << "Please wait for it to finish." << endl;
 	system("pause");
-	homeSerial->write(NULL, 0);	//save calibration
-	// TODO: Why no awaySerial->write(NULL, 0) ?
 	cout << "Calibration done!" << endl;
 }
 

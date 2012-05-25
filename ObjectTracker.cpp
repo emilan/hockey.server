@@ -64,7 +64,7 @@ void ObjectTracker::trackObject(IplImage* image,CvPoint2D32f* point) {
 	*point=tempPoint;
 
 	if(calibrationMode) {
-		char buf[50];
+		/*char buf[50];
 		sprintf_s(buf, "moment10: %.2f", moment10);
 		cvPutText(erodeImg, buf, cvPoint(0, 15), &cvFont(1), cvScalar(255, 255, 255, 255));
 
@@ -78,9 +78,9 @@ void ObjectTracker::trackObject(IplImage* image,CvPoint2D32f* point) {
 		cvPutText(erodeImg, buf, cvPoint(200, 15), &cvFont(1), cvScalar(255, 255, 255, 255));
 
 		sprintf_s(buf, "posY: %.2f", posY);
-		cvPutText(erodeImg, buf, cvPoint(200, 30), &cvFont(1), cvScalar(255, 255, 255, 255));
+		cvPutText(erodeImg, buf, cvPoint(200, 30), &cvFont(1), cvScalar(255, 255, 255, 255));*/
 
-		cvCircle(image, cvPoint(posX, posY), 10, cvScalar(0, 255, 0, 255));
+		cvCircle(image, cvPoint(posX, posY), 5, cvScalar(0, 255, 0, 255));
 
 		cvShowImage("treshold image",tresholdImage );
 		cvShowImage("eroded image",erodeImg );
