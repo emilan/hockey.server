@@ -5,6 +5,7 @@
 #include "cv.h"
 #include "highgui.h"
 #include "Limits.h"
+#include "Gametime.h"
 
 #include "MicroControllers.h"
 
@@ -96,6 +97,9 @@ void draw() {
 	
 	sprintf_s(buf, "%d - %d", getHomeTeam()->getGoals(), getAwayTeam()->getGoals());
 	cvPutText(pImg, buf, cvPoint(380, 30), &cvFont(2, 2), cvScalar(255, 255, 255, 255));
+
+	sprintf_s(buf, "%d", getGametime() / 1000);
+	cvPutText(pImg, buf, cvPoint(600, 30), &cvFont(2, 2), cvScalar(255, 255, 255, 255));
 
 	cvShowImage("Hockey Server Visualisation", pImg);
 	cvWaitKey(1);

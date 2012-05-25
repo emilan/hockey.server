@@ -3,6 +3,7 @@
 #include "CamCapture.h"
 #include "Limits.h"
 #include "HockeyGame.h"
+#include "Gametime.h"
 
 #include "cv.h"
 
@@ -62,25 +63,41 @@ void puck_private::addHistory(puck::Position pos) {
 void puck_private::updatePosition(CvPoint2D32f* ps){
 	//gör linjär transformation pixelkordinatrer -> millimeter med hjälp utav målens position
 	hasPosition = !(ps->x == 0 && ps->y == 0);
+	static int becameInvisibleTime = -1;
 	if (hasPosition) {
 		puck::Position pos = translateCoordinates(ps->x, ps->y);
 		addHistory(pos);
 		homeGoal = awayGoal = goalDetected = false;
 
 		limits::update();
+		becameInvisibleTime = -1;
 	}
 	else {	// Puck becomes invisible when in goal. This code checks if the puck's trajectory is towards one of the goals.
-		if (history.size() >= 2 && !goalDetected) {
+		if (becameInvisibleTime == -1) {
+			becameInvisibleTime = getGametime();
+			cout << "t" << becameInvisibleTime << endl;
+		}
+		else if (!goalDetected && (history.size() >= 2) && (getGametime() - becameInvisibleTime > 1000)) {
 			// TODO: Don't use just two last points (only if it doesn't work)
 			// TODO: Either put something on top of goals or allow detection of puck in goal (because sometimes it succeeds)
 			puck::Position last = history[history.size() - 1];
+			
+			// TODO: From automatic goal detection instead?
 			float awayGoallineX = 284;
 			float goallineMinY = -50;
-			float goallineMaxY = 50;
-
+			float goallineMaxY = 43;
 			float homeGoallineX = -284;
 
 			puck::Position secondLast = history[history.size() - 2];
+			int i = history.size() - 3;
+			while ((secondLast.x == last.x || secondLast.y == last.y) && (i >= 0)) {
+				secondLast = history[i];
+				cout << "<" << i << endl;
+				i--;
+			}	
+
+			cout << last.x << "," << last.y << "\t" << secondLast.x << "," << secondLast.y << endl;
+
 			// Between center of field and finnish goal line and moving towards finnish goal
 			if (last.x < awayGoallineX && last.x > 0 && secondLast.x < last.x) {
 				// y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
@@ -95,14 +112,14 @@ void puck_private::updatePosition(CvPoint2D32f* ps){
 					}
 					else homeGoal = awayGoal = false;
 					goalDetected = true;
-					hockeygame::pauseGame();	// TODO: Perhaps a bit beyond my principles of modularity... Should be in some kind of goal event...
-					
+					hockeygame::pauseGame();	// TODO: Perhaps a bit against my principles of modularity... Should be in some kind of goal event...
 				}
 				else homeGoal = awayGoal = false;
 			}
 			// Between center and swedish goal line and moving towards swedish goal
 			else if (last.x > homeGoallineX && last.x < 0 && secondLast.x > last.x) {
 				float y = 1.0f * (last.y - secondLast.y) / (last.x - secondLast.x) * (homeGoallineX - secondLast.x) + secondLast.y;
+				cout << y << endl;
 				if (y > goallineMinY && y < goallineMaxY) {
 					// Goal detected. Ask limits if okay goal
 					if (limits::isOkayAwayGoal()) {
@@ -113,7 +130,7 @@ void puck_private::updatePosition(CvPoint2D32f* ps){
 					}
 					else homeGoal = awayGoal = false;
 					goalDetected = true;
-					hockeygame::pauseGame();	// TODO: Perhaps a bit beyond my principles of modularity... Should be in some kind of goal event...
+					hockeygame::pauseGame();	// TODO: Perhaps a bit against my principles of modularity... Should be in some kind of goal event...
 				}
 				else homeGoal = awayGoal = false;
 			}

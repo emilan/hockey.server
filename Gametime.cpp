@@ -6,8 +6,8 @@
 
 namespace gametimens{
 	int startTime;
-	int totalPausetime=0;
-	int pauseStartTime=0;
+	int totalPausetime = 0;
+	int pauseStartTime = TIME;
 }
 
 using namespace gametimens;
@@ -15,11 +15,12 @@ using namespace gametimens;
 void startGametime() {
 	startTime = TIME;
 	totalPausetime = 0;
+	pauseStartTime = 0;
 }
 
 void pauseGametime() {
-	if (pauseStartTime == 0)
-		pauseStartTime=TIME;
+	if (pauseStartTime == 0) 
+		pauseStartTime = TIME;
 }
 
 void resumeGametime() {
@@ -30,5 +31,7 @@ void resumeGametime() {
 }
 
 int getGametime() {
+	if (pauseStartTime != 0)
+		return pauseStartTime - startTime - totalPausetime;
 	return TIME - startTime - totalPausetime;
 }
