@@ -92,10 +92,11 @@ void microControllersRead(unsigned char *homeStatus, unsigned char *awayStatus) 
 
 void homeGoalMade() {
 	getHomeTeam()->goalMade();
+	ShellExecute(NULL, "open", "spotify:track:7e6zxrNSLVyFV65O6VUCgr", NULL, NULL, SW_MINIMIZE);
 	char homeCommands[30];
 	for (int i = 0; i < 6; i++) {
 		homeCommands[i * 5 + 0] = i;
-		homeCommands[i * 5 + 1] = 100;
+		homeCommands[i * 5 + 1] = 10;
 		homeCommands[i * 5 + 2] = 50;
 		homeCommands[i * 5 + 3] = 127;
 		homeCommands[i * 5 + 4] = 0;
@@ -103,7 +104,7 @@ void homeGoalMade() {
 	char awayCommands[30];
 	for (int i = 0; i < 6; i++) {
 		awayCommands[i * 5 + 0] = i;
-		awayCommands[i * 5 + 1] = 100;
+		awayCommands[i * 5 + 1] = 10;
 		awayCommands[i * 5 + 2] = 10;
 		awayCommands[i * 5 + 3] = 0;
 		awayCommands[i * 5 + 4] = 0;
@@ -114,10 +115,11 @@ void homeGoalMade() {
 
 void awayGoalMade() {
 	getAwayTeam()->goalMade();
+	ShellExecute(NULL, "open", "spotify:track:1qB4J3nIahHzOiX4lS0CAc", NULL, NULL, SW_MINIMIZE);
 	char awayCommands[30];
 	for (int i = 0; i < 6; i++) {
 		awayCommands[i * 5 + 0] = i;
-		awayCommands[i * 5 + 1] = 100;
+		awayCommands[i * 5 + 1] = 10;
 		awayCommands[i * 5 + 2] = 50;
 		awayCommands[i * 5 + 3] = 127;
 		awayCommands[i * 5 + 4] = 0;
@@ -125,7 +127,7 @@ void awayGoalMade() {
 	char homeCommands[30];
 	for (int i = 0; i < 6; i++) {
 		homeCommands[i * 5 + 0] = i;
-		homeCommands[i * 5 + 1] = 100;
+		homeCommands[i * 5 + 1] = 10;
 		homeCommands[i * 5 + 2] = 10;
 		homeCommands[i * 5 + 3] = 0;
 		homeCommands[i * 5 + 4] = 0;

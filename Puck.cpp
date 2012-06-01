@@ -77,7 +77,7 @@ void puck_private::updatePosition(CvPoint2D32f* ps){
 			becameInvisibleTime = getGametime();
 			cout << "t" << becameInvisibleTime << endl;
 		}
-		else if (!goalDetected && (history.size() >= 2) && (getGametime() - becameInvisibleTime > 1000)) {
+		else if (!goalDetected && (history.size() >= 2) && (getGametime() - becameInvisibleTime > 100)) {
 			// TODO: Don't use just two last points (only if it doesn't work)
 			// TODO: Either put something on top of goals or allow detection of puck in goal (because sometimes it succeeds)
 			puck::Position last = history[history.size() - 1];
@@ -99,7 +99,7 @@ void puck_private::updatePosition(CvPoint2D32f* ps){
 			cout << last.x << "," << last.y << "\t" << secondLast.x << "," << secondLast.y << endl;
 
 			// Between center of field and finnish goal line and moving towards finnish goal
-			if (last.x < awayGoallineX && last.x > 0 && secondLast.x < last.x) {
+			if (last.x < awayGoallineX + 5 && last.x > 0 && secondLast.x < last.x) {
 				// y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
 				float y = 1.0f * (last.y - secondLast.y) / (last.x - secondLast.x) * (awayGoallineX - secondLast.x) + secondLast.y;
 				if (y > goallineMinY && y < goallineMaxY) {
@@ -117,7 +117,7 @@ void puck_private::updatePosition(CvPoint2D32f* ps){
 				else homeGoal = awayGoal = false;
 			}
 			// Between center and swedish goal line and moving towards swedish goal
-			else if (last.x > homeGoallineX && last.x < 0 && secondLast.x > last.x) {
+			else if (last.x > homeGoallineX - 5 && last.x < 0 && secondLast.x > last.x) {
 				float y = 1.0f * (last.y - secondLast.y) / (last.x - secondLast.x) * (homeGoallineX - secondLast.x) + secondLast.y;
 				cout << y << endl;
 				if (y > goallineMinY && y < goallineMaxY) {

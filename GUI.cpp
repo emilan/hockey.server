@@ -98,8 +98,8 @@ void draw() {
 	sprintf_s(buf, "%d - %d", getHomeTeam()->getGoals(), getAwayTeam()->getGoals());
 	cvPutText(pImg, buf, cvPoint(380, 30), &cvFont(2, 2), cvScalar(255, 255, 255, 255));
 
-	sprintf_s(buf, "%d", getGametime() / 1000);
-	cvPutText(pImg, buf, cvPoint(600, 30), &cvFont(2, 2), cvScalar(255, 255, 255, 255));
+	sprintf_s(buf, "%4d", getGametime() / 1000);
+	cvPutText(pImg, buf, cvPoint(760, 30), &cvFont(2, 2), cvScalar(255, 255, 255, 255));
 
 	cvShowImage("Hockey Server Visualisation", pImg);
 	cvWaitKey(1);
